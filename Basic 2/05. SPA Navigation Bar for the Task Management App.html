@@ -1,0 +1,699 @@
+<h2 id="part-7-spa-navigation-bar-for-the-task-management-app">Part 7:
+SPA Navigation Bar for the Task Management App</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li><p>Ensure the app includes the setup from previous steps (Laravel
+Breeze, Inertia, React, TypeScript, Redux, Tailwind CSS,
+<code>react-i18next</code>, etc.).</p></li>
+<li><p>Install <code>@headlessui/react</code> if not already
+installed:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install @headlessui/react</span></code></pre></div></li>
+</ul>
+<h3 id="step-1-create-new-routes-for-dashboard-and-profile">Step 1:
+Create New Routes for Dashboard and Profile</h3>
+<ul>
+<li><p><strong>Update Routes</strong> (<code>routes/web.php</code>): Add
+routes for Dashboard and Profile, protected by authentication:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode php"><code class="sourceCode php"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="cn">A</span>pp\<span class="cn">H</span>ttp\<span class="cn">C</span>ontrollers\<span class="cn">P</span>rofileController<span class="ot">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="cn">A</span>pp\<span class="cn">H</span>ttp\<span class="cn">C</span>ontrollers\<span class="cn">T</span>askController<span class="ot">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="cn">I</span>lluminate\<span class="cn">S</span>upport\<span class="cn">F</span>acades\<span class="cn">R</span>oute<span class="ot">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="cn">R</span>oute::middleware(<span class="st">&#39;auth&#39;</span>)-&gt;group(<span class="kw">function</span> () {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::get(<span class="st">&#39;/dashboard&#39;</span><span class="ot">,</span> <span class="kw">fn</span> () =&gt; <span class="cn">I</span>nertia::render(<span class="st">&#39;Dashboard&#39;</span>))-&gt;name(<span class="st">&#39;dashboard&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::get(<span class="st">&#39;/profile&#39;</span><span class="ot">,</span> [<span class="cn">P</span>rofileController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;edit&#39;</span>])-&gt;name(<span class="st">&#39;profile.edit&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::put(<span class="st">&#39;/profile&#39;</span><span class="ot">,</span> [<span class="cn">P</span>rofileController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;update&#39;</span>])-&gt;name(<span class="st">&#39;profile.update&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::get(<span class="st">&#39;/tasks&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;index&#39;</span>])-&gt;name(<span class="st">&#39;tasks.index&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::get(<span class="st">&#39;/tasks/create&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;create&#39;</span>])-&gt;name(<span class="st">&#39;tasks.create&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::post(<span class="st">&#39;/tasks&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;store&#39;</span>])-&gt;name(<span class="st">&#39;tasks.store&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::get(<span class="st">&#39;/tasks/{task}/edit&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;edit&#39;</span>])-&gt;name(<span class="st">&#39;tasks.edit&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::put(<span class="st">&#39;/tasks/{task}&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;update&#39;</span>])-&gt;name(<span class="st">&#39;tasks.update&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::delete(<span class="st">&#39;/tasks/{task}&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;destroy&#39;</span>])-&gt;name(<span class="st">&#39;tasks.destroy&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="cn">R</span>oute::post(<span class="st">&#39;/tasks/reorder&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;reorder&#39;</span>])-&gt;name(<span class="st">&#39;tasks.reorder&#39;</span>)<span class="ot">;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>})<span class="ot">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="cn">R</span>oute::get(<span class="st">&#39;/api/tasks&#39;</span><span class="ot">,</span> [<span class="cn">T</span>askController::<span class="kw">class</span><span class="ot">,</span> <span class="st">&#39;apiIndex&#39;</span>])-&gt;name(<span class="st">&#39;api.tasks&#39;</span>)<span class="ot">;</span></span></code></pre></div></li>
+<li><p><strong>Create ProfileController</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">php</span> artisan make:controller ProfileController</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode php"><code class="sourceCode php"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> <span class="cn">A</span>pp\<span class="cn">H</span>ttp\<span class="cn">C</span>ontrollers<span class="ot">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="cn">I</span>lluminate\<span class="cn">H</span>ttp\<span class="cn">R</span>equest<span class="ot">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="cn">I</span>nertia\<span class="cn">I</span>nertia<span class="ot">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="cn">P</span>rofileController <span class="kw">extends</span> <span class="cn">C</span>ontroller</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">function</span> edit()</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="cn">I</span>nertia::render(<span class="st">&#39;Profile/Edit&#39;</span><span class="ot">,</span> [</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;user&#39;</span> =&gt; auth()-&gt;user()<span class="ot">,</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        ])<span class="ot">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">function</span> update(<span class="cn">R</span>equest <span class="va">$request</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">$validated</span> <span class="op">=</span> <span class="va">$request</span>-&gt;validate([</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;name&#39;</span> =&gt; <span class="st">&#39;required|string|max:255&#39;</span><span class="ot">,</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;email&#39;</span> =&gt; <span class="st">&#39;required|string|email|max:255|unique:users,email,&#39;</span> <span class="op">.</span> auth()-&gt;id()<span class="ot">,</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        ])<span class="ot">;</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        auth()-&gt;user()-&gt;update(<span class="va">$validated</span>)<span class="ot">;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> redirect()-&gt;route(<span class="st">&#39;profile.edit&#39;</span>)-&gt;with(<span class="st">&#39;message&#39;</span><span class="ot">,</span> <span class="st">&#39;Profile updated!&#39;</span>)<span class="ot">;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div></li>
+<li><p><strong>Create Dashboard Component</strong>
+(<code>resources/js/Pages/Dashboard.tsx</code>):
+<code>tsx</code>typescript import React from ‘react’; import {
+useTranslation } from ‘react-i18next’; import { Link, usePage } from
+‘<span class="citation"
+data-cites="inertiajs/react">@inertiajs/react</span>’;</p></li>
+</ul>
+<p>interface User { id: number; name: string; email: string; }</p>
+<p>interface PageProps { auth: User; flash: { message?: string }; }</p>
+<p>const Dashboard: React.FC<PageProps> = ({ auth }) =&gt; { const { t }
+= useTranslation(); const { flash } = usePage<PageProps>().props;</p>
+<pre><code>return (
+    &lt;div className=&quot;max-w-4xl mx-auto p-4&quot;&gt;
+        &lt;h1 className=&quot;text-2xl font-bold&quot;&gt;{t(&#39;Dashboard&#39;)}&lt;/h1&gt;
+        &lt;p&gt;{t(&#39;Welcome&#39;, { name: auth.name })}&lt;/p&gt;
+        {flash.message &amp;&amp; &lt;div className=&quot;text-green-600&quot;&gt;{flash.message}&lt;/div&gt;}
+        &lt;Link href=&quot;/tasks&quot; className=&quot;text-blue-600 hover:underline&quot;&gt;
+            {t(&#39;Go to Tasks&#39;)}
+        &lt;/Link&gt;
+    &lt;/div&gt;
+);</code></pre>
+<p>};</p>
+<p>export default Dashboard;</p>
+<pre><code></code></pre>
+<ul>
+<li><strong>Create Profile Edit Component</strong>
+(<code>resources/js/Pages/Profile/Edit.tsx</code>):
+<code>tsx</code>typescript import React from ‘react’; import { useForm }
+from ‘react-hook-form’; import { yupResolver } from ‘<span
+class="citation"
+data-cites="hookform/resolvers/yup">@hookform/resolvers/yup</span>’;
+import * as Yup from ‘yup’; import { Inertia } from ‘<span
+class="citation"
+data-cites="inertiajs/inertia">@inertiajs/inertia</span>’; import {
+Link, usePage } from ‘<span class="citation"
+data-cites="inertiajs/react">@inertiajs/react</span>’; import {
+useTranslation } from ‘react-i18next’;</li>
+</ul>
+<p>interface User { id: number; name: string; email: string; }</p>
+<p>interface PageProps { user: User; flash: { message?: string }; }</p>
+<p>const schema = Yup.object().shape({ name: Yup.string().required(‘Name
+is required’).max(255, ‘Name is too long’), email:
+Yup.string().required(‘Email is required’).email(‘Invalid
+email’).max(255), });</p>
+<p>interface FormData { name: string; email: string; }</p>
+<p>const Edit: React.FC<PageProps> = ({ user }) =&gt; { const { t } =
+useTranslation(); const { flash } = usePage<PageProps>().props; const {
+register, handleSubmit, formState: { errors } } = useForm<FormData>({
+resolver: yupResolver(schema), defaultValues: { name: user.name, email:
+user.email, }, });</p>
+<pre><code>const onSubmit = (data: FormData) =&gt; {
+    Inertia.put(&#39;/profile&#39;, data);
+};
+
+return (
+    &lt;div className=&quot;max-w-4xl mx-auto p-4&quot;&gt;
+        &lt;h1 className=&quot;text-2xl font-bold&quot;&gt;{t(&#39;Edit Profile&#39;)}&lt;/h1&gt;
+        {flash.message &amp;&amp; &lt;div className=&quot;text-green-600&quot;&gt;{flash.message}&lt;/div&gt;}
+        &lt;form onSubmit={handleSubmit(onSubmit)} aria-label={t(&#39;Edit profile form&#39;)}&gt;
+            &lt;div className=&quot;mb-4&quot;&gt;
+                &lt;label htmlFor=&quot;name&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Name&#39;)}&lt;/label&gt;
+                &lt;input
+                    id=&quot;name&quot;
+                    {...register(&#39;name&#39;)}
+                    className=&quot;border p-2 w-full&quot;
+                    aria-required=&quot;true&quot;
+                /&gt;
+                {errors.name &amp;&amp; &lt;p className=&quot;text-red-600&quot; role=&quot;alert&quot;&gt;{errors.name.message}&lt;/p&gt;}
+            &lt;/div&gt;
+            &lt;div className=&quot;mb-4&quot;&gt;
+                &lt;label htmlFor=&quot;email&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Email&#39;)}&lt;/label&gt;
+                &lt;input
+                    id=&quot;email&quot;
+                    {...register(&#39;email&#39;)}
+                    className=&quot;border p-2 w-full&quot;
+                    aria-required=&quot;true&quot;
+                /&gt;
+                {errors.email &amp;&amp; &lt;p className=&quot;text-red-600&quot; role=&quot;alert&quot;&gt;{errors.email.message}&lt;/p&gt;}
+            &lt;/div&gt;
+            &lt;div className=&quot;flex space-x-2&quot;&gt;
+                &lt;button type=&quot;submit&quot; className=&quot;bg-blue-500 text-white p-2&quot;&gt;{t(&#39;Update&#39;)}&lt;/button&gt;
+                &lt;Link href=&quot;/dashboard&quot; className=&quot;text-blue-600 hover:underline&quot;&gt;
+                    {t(&#39;Cancel&#39;)}
+                &lt;/Link&gt;
+            &lt;/div&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+);</code></pre>
+<p>};</p>
+<p>export default Edit;</p>
+<pre><code></code></pre>
+<ul>
+<li><p><strong>Update i18n Translations</strong>
+(<code>resources/js/i18n.js</code>):</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> resources <span class="op">=</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">en</span><span class="op">:</span> {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">translation</span><span class="op">:</span> {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>            <span class="co">// ... existing translations ...</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Dashboard&#39;</span><span class="op">:</span> <span class="st">&#39;Dashboard&#39;</span><span class="op">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Tasks&#39;</span><span class="op">:</span> <span class="st">&#39;Tasks&#39;</span><span class="op">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Profile&#39;</span><span class="op">:</span> <span class="st">&#39;Profile&#39;</span><span class="op">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Logout&#39;</span><span class="op">:</span> <span class="st">&#39;Logout&#39;</span><span class="op">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Edit Profile&#39;</span><span class="op">:</span> <span class="st">&#39;Edit Profile&#39;</span><span class="op">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Name&#39;</span><span class="op">:</span> <span class="st">&#39;Name&#39;</span><span class="op">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Email&#39;</span><span class="op">:</span> <span class="st">&#39;Email&#39;</span><span class="op">,</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Update&#39;</span><span class="op">:</span> <span class="st">&#39;Update&#39;</span><span class="op">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Cancel&#39;</span><span class="op">:</span> <span class="st">&#39;Cancel&#39;</span><span class="op">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Go to Tasks&#39;</span><span class="op">:</span> <span class="st">&#39;Go to Tasks&#39;</span><span class="op">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">es</span><span class="op">:</span> {</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">translation</span><span class="op">:</span> {</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="co">// ... existing translations ...</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Dashboard&#39;</span><span class="op">:</span> <span class="st">&#39;Tablero&#39;</span><span class="op">,</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Tasks&#39;</span><span class="op">:</span> <span class="st">&#39;Tareas&#39;</span><span class="op">,</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Profile&#39;</span><span class="op">:</span> <span class="st">&#39;Perfil&#39;</span><span class="op">,</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Logout&#39;</span><span class="op">:</span> <span class="st">&#39;Cerrar Sesión&#39;</span><span class="op">,</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Edit Profile&#39;</span><span class="op">:</span> <span class="st">&#39;Editar Perfil&#39;</span><span class="op">,</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Name&#39;</span><span class="op">:</span> <span class="st">&#39;Nombre&#39;</span><span class="op">,</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Email&#39;</span><span class="op">:</span> <span class="st">&#39;Correo Electrónico&#39;</span><span class="op">,</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Update&#39;</span><span class="op">:</span> <span class="st">&#39;Actualizar&#39;</span><span class="op">,</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Cancel&#39;</span><span class="op">:</span> <span class="st">&#39;Cancelar&#39;</span><span class="op">,</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;Go to Tasks&#39;</span><span class="op">:</span> <span class="st">&#39;Ir a Tareas&#39;</span><span class="op">,</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div></li>
+</ul>
+<h3 id="step-2-create-reusable-navigation-bar-component">Step 2: Create
+Reusable Navigation Bar Component</h3>
+<p>Create a responsive navigation bar with SPA links using Inertia’s
+<code>Link</code> component and <code>@headlessui/react</code> for a
+mobile-friendly menu.</p>
+<ul>
+<li><strong>Create NavBar Component</strong>
+(<code>resources/js/Components/NavBar.tsx</code>):
+<code>tsx</code>typescript import React from ‘react’; import { Link }
+from ‘<span class="citation"
+data-cites="inertiajs/react">@inertiajs/react</span>’; import {
+useTranslation } from ‘react-i18next’; import { Disclosure } from ‘<span
+class="citation"
+data-cites="headlessui/react">@headlessui/react</span>’; import {
+Bars3Icon, XMarkIcon } from ‘<span class="citation"
+data-cites="heroicons/react/24/outline">@heroicons/react/24/outline</span>’;</li>
+</ul>
+<p>interface NavBarProps { auth: { user: { id: number; name: string;
+email: string } }; }</p>
+<p>const NavBar: React.FC<NavBarProps> = ({ auth }) =&gt; { const { t }
+= useTranslation();</p>
+<pre><code>const navigation = [
+    { name: t(&#39;Dashboard&#39;), href: &#39;/dashboard&#39;, routeName: &#39;dashboard&#39; },
+    { name: t(&#39;Tasks&#39;), href: &#39;/tasks&#39;, routeName: &#39;tasks.index&#39; },
+    { name: t(&#39;Profile&#39;), href: &#39;/profile&#39;, routeName: &#39;profile.edit&#39; },
+];
+
+return (
+    &lt;Disclosure as=&quot;nav&quot; className=&quot;bg-gray-800&quot;&gt;
+        {({ open }) =&gt; (
+            &lt;&gt;
+                &lt;div className=&quot;max-w-7xl mx-auto px-4 sm:px-6 lg:px-8&quot;&gt;
+                    &lt;div className=&quot;flex items-center justify-between h-16&quot;&gt;
+                        &lt;div className=&quot;flex items-center&quot;&gt;
+                            &lt;div className=&quot;flex-shrink-0&quot;&gt;
+                                &lt;span className=&quot;text-white font-bold&quot;&gt;{t(&#39;Task Manager&#39;)}&lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;div className=&quot;hidden sm:ml-6 sm:flex sm:space-x-8&quot;&gt;
+                                {navigation.map((item) =&gt; (
+                                    &lt;Link
+                                        key={item.name}
+                                        href={item.href}
+                                        className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                            route().current(item.routeName)
+                                                ? &#39;border-indigo-500 text-white&#39;
+                                                : &#39;border-transparent text-gray-300 hover:border-gray-300 hover:text-white&#39;
+                                        }`}
+                                        aria-current={route().current(item.routeName) ? &#39;page&#39; : undefined}
+                                    &gt;
+                                        {item.name}
+                                    &lt;/Link&gt;
+                                ))}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;div className=&quot;hidden sm:ml-6 sm:flex sm:items-center&quot;&gt;
+                            &lt;span className=&quot;text-gray-300 mr-4&quot;&gt;{auth.user.name}&lt;/span&gt;
+                            &lt;Link
+                                href=&quot;/logout&quot;
+                                method=&quot;post&quot;
+                                as=&quot;button&quot;
+                                className=&quot;text-gray-300 hover:text-white&quot;
+                                aria-label={t(&#39;Logout&#39;)}
+                            &gt;
+                                {t(&#39;Logout&#39;)}
+                            &lt;/Link&gt;
+                        &lt;/div&gt;
+                        &lt;div className=&quot;sm:hidden&quot;&gt;
+                            &lt;Disclosure.Button className=&quot;inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700&quot;&gt;
+                                &lt;span className=&quot;sr-only&quot;&gt;Open main menu&lt;/span&gt;
+                                {open ? (
+                                    &lt;XMarkIcon className=&quot;block h-6 w-6&quot; aria-hidden=&quot;true&quot; /&gt;
+                                ) : (
+                                    &lt;Bars3Icon className=&quot;block h-6 w-6&quot; aria-hidden=&quot;true&quot; /&gt;
+                                )}
+                            &lt;/Disclosure.Button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;Disclosure.Panel className=&quot;sm:hidden&quot;&gt;
+                    &lt;div className=&quot;pt-2 pb-3 space-y-1&quot;&gt;
+                        {navigation.map((item) =&gt; (
+                            &lt;Disclosure.Button
+                                key={item.name}
+                                as={Link}
+                                href={item.href}
+                                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                                    route().current(item.routeName)
+                                        ? &#39;bg-indigo-50 border-indigo-500 text-indigo-700&#39;
+                                        : &#39;border-transparent text-gray-300 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700&#39;
+                                }`}
+                                aria-current={route().current(item.routeName) ? &#39;page&#39; : undefined}
+                            &gt;
+                                {item.name}
+                            &lt;/Disclosure.Button&gt;
+                        ))}
+                        &lt;Disclosure.Button
+                            as={Link}
+                            href=&quot;/logout&quot;
+                            method=&quot;post&quot;
+                            className=&quot;block pl-3 pr-4 py-2 border-l-4 text-base font-medium text-gray-300 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700&quot;
+                            aria-label={t(&#39;Logout&#39;)}
+                        &gt;
+                            {t(&#39;Logout&#39;)}
+                        &lt;/Disclosure.Button&gt;
+                    &lt;/div&gt;
+                &lt;/Disclosure.Panel&gt;
+            &lt;/&gt;
+        )}
+    &lt;/Disclosure&gt;
+);</code></pre>
+<p>};</p>
+<p>export default NavBar;</p>
+<pre><code></code></pre>
+<ul>
+<li><p><strong>Install Heroicons</strong> (for menu icons):</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install @heroicons/react</span></code></pre></div></li>
+</ul>
+<h3 id="step-3-integrate-navbar-into-app-layout">Step 3: Integrate
+NavBar into App Layout</h3>
+<ul>
+<li><strong>Create Layout Component</strong>
+(<code>resources/js/Layouts/AuthenticatedLayout.tsx</code>):
+<code>tsx</code>typescript import React from ‘react’; import NavBar from
+‘../Components/NavBar’; import LanguageSwitcher from
+‘../Components/LanguageSwitcher’;</li>
+</ul>
+<p>interface AuthenticatedLayoutProps { auth: { user: { id: number;
+name: string; email: string } }; children: React.ReactNode; }</p>
+const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({ auth,
+children }) =&gt; { return (
+<div className="min-h-screen bg-gray-100">
+<pre><code>        &lt;NavBar auth={auth} /&gt;
+        &lt;main className=&quot;mt-4&quot;&gt;
+            &lt;LanguageSwitcher /&gt;
+            {children}
+        &lt;/main&gt;
+    &lt;/div&gt;
+);</code></pre>
+<p>};</p>
+<p>export default AuthenticatedLayout;</p>
+<pre><code></code></pre>
+<ul>
+<li><strong>Update Pages to Use Layout</strong>:
+<ul>
+<li><strong>Dashboard.tsx</strong>: <code>tsx</code>typescript import
+React from ‘react’; import { useTranslation } from ‘react-i18next’;
+import { Link, usePage } from ‘<span class="citation"
+data-cites="inertiajs/react">@inertiajs/react</span>’; import
+AuthenticatedLayout from ‘../Layouts/AuthenticatedLayout’;</li>
+</ul></li>
+</ul>
+<p>interface User { id: number; name: string; email: string; }</p>
+<p>interface PageProps { auth: User; flash: { message?: string }; }</p>
+<p>const Dashboard: React.FC<PageProps> = ({ auth }) =&gt; { const { t }
+= useTranslation(); const { flash } = usePage<PageProps>().props;</p>
+<pre><code>return (
+    &lt;AuthenticatedLayout auth={auth}&gt;
+        &lt;div className=&quot;max-w-4xl mx-auto p-4&quot;&gt;
+            &lt;h1 className=&quot;text-2xl font-bold&quot;&gt;{t(&#39;Dashboard&#39;)}&lt;/h1&gt;
+            &lt;p&gt;{t(&#39;Welcome&#39;, { name: auth.name })}&lt;/p&gt;
+            {flash.message &amp;&amp; &lt;div className=&quot;text-green-600&quot;&gt;{flash.message}&lt;/div&gt;}
+            &lt;Link href=&quot;/tasks&quot; className=&quot;text-blue-600 hover:underline&quot;&gt;
+                {t(&#39;Go to Tasks&#39;)}
+            &lt;/Link&gt;
+        &lt;/div&gt;
+    &lt;/AuthenticatedLayout&gt;
+);</code></pre>
+<p>};</p>
+<p>export default Dashboard;</p>
+<pre><code></code></pre>
+<ul>
+<li><strong>Index.tsx</strong>
+(<code>resources/js/Pages/Tasks/Index.tsx</code>):
+<code>tsx</code>typescript import React, { useContext, useEffect,
+useState } from ‘react’; import { Link, usePage } from ‘<span
+class="citation" data-cites="inertiajs/react">@inertiajs/react</span>’;
+import { useDispatch, useSelector } from ‘react-redux’; import {
+setTasks, addTask } from ‘../Store/taskSlice’; import { FilterContext }
+from ‘../Context/FilterContext’; import { Inertia } from ‘<span
+class="citation"
+data-cites="inertiajs/inertia">@inertiajs/inertia</span>’; import {
+useTranslation } from ‘react-i18next’; import DataTable from
+‘./DataTable’; import Modal from ‘../Components/Modal’; import
+AuthenticatedLayout from ‘../Layouts/AuthenticatedLayout’; import Create
+from ‘./Create’;</li>
+</ul>
+<p>interface Task { id: number; title: string; description: string |
+null; completed: boolean; category_id: number | null; category: { id:
+number; name: string } | null; user_id: number; order: number; image:
+string | null; }</p>
+<p>interface Subcategory { id: number; name: string; category_id:
+number; }</p>
+<p>interface Category { id: number; name: string; subcategories:
+Subcategory[]; }</p>
+<p>interface User { id: number; name: string; email: string; }</p>
+<p>interface PageProps { tasks: { data: Task[]; links: { url: string;
+label: string; active: boolean }[] }; categories: Category[]; filters: {
+search?: string }; flash: { message?: string }; auth: User; }</p>
+<p>function Index({ tasks: initialTasks, categories, filters, auth }:
+PageProps) { const { t } = useTranslation(); const { flash } =
+usePage<PageProps>().props; const dispatch = useDispatch(); const tasks
+= useSelector((state: { tasks: { tasks: Task[] } }) =&gt;
+state.tasks.tasks); const { filter } = useContext(FilterContext); const
+[search, setSearch] = useState<string>(filters.search || ’’); const
+[selectedTask, setSelectedTask] = useState&lt;Task | null&gt;(null);
+const [showCreateModal, setShowCreateModal] = useState(false);</p>
+<pre><code>useEffect(() =&gt; {
+    dispatch(setTasks(initialTasks.data));
+
+    window.Echo.private(`user.${auth.id}`).listen(&#39;TaskCreated&#39;, (e: { task: Task }) =&gt; {
+        dispatch(addTask(e.task));
+    });
+
+    return () =&gt; {
+        window.Echo.leave(`user.${auth.id}`);
+    };
+}, [initialTasks.data, dispatch, auth.id]);
+
+const filteredTasks = tasks.filter((task) =&gt; {
+    if (filter === &#39;completed&#39;) return task.completed;
+    if (filter === &#39;pending&#39;) return !task.completed;
+    if (filter !== &#39;all&#39; &amp;&amp; filter !== &#39;completed&#39; &amp;&amp; filter !== &#39;pending&#39;) {
+        return task.category_id === parseInt(filter);
+    }
+    return true;
+});
+
+const handleSearch = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+    setSearch(e.target.value);
+    Inertia.get(&#39;/tasks&#39;, { search: e.target.value }, { preserveState: true });
+};
+
+const handleDelete = (id: number) =&gt; {
+    if (confirm(t(&#39;Are you sure you want to delete this task?&#39;))) {
+        Inertia.delete(`/tasks/${id}`);
+    }
+};
+
+return (
+    &lt;AuthenticatedLayout auth={auth}&gt;
+        &lt;div className=&quot;max-w-4xl mx-auto p-4&quot;&gt;
+            &lt;h1 className=&quot;text-2xl font-bold&quot;&gt;{t(&#39;Task Manager&#39;)}&lt;/h1&gt;
+            &lt;p&gt;{t(&#39;Welcome&#39;, { name: auth.name })}&lt;/p&gt;
+            {flash.message &amp;&amp; &lt;div className=&quot;text-green-600&quot;&gt;{flash.message}&lt;/div&gt;}
+            &lt;button
+                onClick={() =&gt; setShowCreateModal(true)}
+                className=&quot;text-blue-600 hover:underline mb-4&quot;
+            &gt;
+                {t(&#39;Add New Task&#39;)}
+            &lt;/button&gt;
+            &lt;DataTable
+                data={filteredTasks}
+                onEdit={(id) =&gt; Inertia.visit(`/tasks/${id}/edit`)}
+                onDelete={handleDelete}
+                onView={setSelectedTask}
+            /&gt;
+            &lt;div className=&quot;mt-4&quot;&gt;
+                {initialTasks.links.map((link, index) =&gt; (
+                    &lt;Link
+                        key={index}
+                        href={link.url}
+                        className={`mr-2 p-2 ${link.active ? &#39;bg-blue-500 text-white&#39; : &#39;bg-gray-200&#39;}`}
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                        aria-current={link.active ? &#39;page&#39; : undefined}
+                    /&gt;
+                ))}
+            &lt;/div&gt;
+            {selectedTask &amp;&amp; (
+                &lt;Modal onClose={() =&gt; setSelectedTask(null)}&gt;
+                    &lt;h2 className=&quot;text-xl font-bold&quot;&gt;{selectedTask.title}&lt;/h2&gt;
+                    &lt;p&gt;{selectedTask.description || &#39;No description&#39;}&lt;/p&gt;
+                    &lt;p&gt;{t(&#39;Status&#39;)}: {selectedTask.completed ? t(&#39;Completed&#39;) : t(&#39;Pending&#39;)}&lt;/p&gt;
+                    {selectedTask.category &amp;&amp; &lt;p&gt;{t(&#39;Category&#39;)}: {selectedTask.category.name}&lt;/p&gt;}
+                    {selectedTask.image &amp;&amp; (
+                        &lt;img src={selectedTask.image} alt={selectedTask.title} className=&quot;max-w-xs&quot; /&gt;
+                    )}
+                &lt;/Modal&gt;
+            )}
+            {showCreateModal &amp;&amp; (
+                &lt;Modal onClose={() =&gt; setShowCreateModal(false)}&gt;
+                    &lt;Create categories={categories} onClose={() =&gt; setShowCreateModal(false)} /&gt;
+                &lt;/Modal&gt;
+            )}
+        &lt;/div&gt;
+    &lt;/AuthenticatedLayout&gt;
+);</code></pre>
+<p>}</p>
+<p>export default Index;</p>
+<pre><code></code></pre>
+<ul>
+<li><strong>Edit.tsx</strong>
+(<code>resources/js/Pages/Tasks/Edit.tsx</code>):
+<code>tsx</code>typescript import React, { useState } from ‘react’;
+import { useForm } from ‘react-hook-form’; import { yupResolver } from
+‘<span class="citation"
+data-cites="hookform/resolvers/yup">@hookform/resolvers/yup</span>’;
+import * as Yup from ‘yup’; import { Inertia } from ‘<span
+class="citation"
+data-cites="inertiajs/inertia">@inertiajs/inertia</span>’; import { Link
+} from ‘<span class="citation"
+data-cites="inertiajs/react">@inertiajs/react</span>’; import {
+useTranslation } from ‘react-i18next’; import AuthenticatedLayout from
+‘../Layouts/AuthenticatedLayout’;</li>
+</ul>
+<p>interface Subcategory { id: number; name: string; category_id:
+number; }</p>
+<p>interface Category { id: number; name: string; subcategories:
+Subcategory[]; }</p>
+<p>interface Task { id: number; title: string; description: string |
+null; completed: boolean; category_id: number | null; subcategory_id:
+number | null; image: string | null; }</p>
+<p>interface User { id: number; name: string; email: string; }</p>
+<p>interface EditProps { task: Task; categories: Category[]; auth: User;
+}</p>
+<p>const schema = Yup.object().shape({ title:
+Yup.string().required(‘Title is required’).max(255, ‘Title is too
+long’), description: Yup.string().nullable(), completed: Yup.boolean(),
+category_id: Yup.number().nullable(), subcategory_id:
+Yup.number().nullable(), image: Yup.mixed().nullable(), });</p>
+<p>interface FormData { title: string; description?: string; completed:
+boolean; category_id?: number; subcategory_id?: number; image?: File;
+}</p>
+<p>const Edit: React.FC<EditProps> = ({ task, categories, auth }) =&gt;
+{ const { t } = useTranslation(); const { register, handleSubmit,
+formState: { errors }, watch } = useForm<FormData>({ resolver:
+yupResolver(schema), defaultValues: { title: task.title, description:
+task.description || ’‘, completed: task.completed, category_id:
+task.category_id || undefined, subcategory_id: task.subcategory_id ||
+undefined, }, }); const categoryId = watch(’category_id’); const
+subcategories = categories.find((cat) =&gt; cat.id ===
+categoryId)?.subcategories || [];</p>
+<pre><code>const onSubmit = (data: FormData) =&gt; {
+    const formData = new FormData();
+    formData.append(&#39;title&#39;, data.title);
+    if (data.description) formData.append(&#39;description&#39;, data.description);
+    formData.append(&#39;completed&#39;, data.completed ? &#39;1&#39; : &#39;0&#39;);
+    if (data.category_id) formData.append(&#39;category_id&#39;, data.category_id.toString());
+    if (data.subcategory_id) formData.append(&#39;subcategory_id&#39;, data.subcategory_id.toString());
+    if (data.image) formData.append(&#39;image&#39;, data.image);
+
+    Inertia.post(`/tasks/${task.id}`, formData, {
+        headers: { &#39;Content-Type&#39;: &#39;multipart/form-data&#39; },
+    });
+};
+
+return (
+    &lt;AuthenticatedLayout auth={auth}&gt;
+        &lt;div className=&quot;max-w-2xl mx-auto p-4&quot;&gt;
+            &lt;h1 className=&quot;text-2xl font-bold&quot;&gt;{t(&#39;Edit Task&#39;)}&lt;/h1&gt;
+            &lt;form onSubmit={handleSubmit(onSubmit)} aria-label={t(&#39;Edit task form&#39;)}&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;title&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Title&#39;)}&lt;/label&gt;
+                    &lt;input
+                        id=&quot;title&quot;
+                        {...register(&#39;title&#39;)}
+                        className=&quot;border p-2 w-full&quot;
+                        aria-required=&quot;true&quot;
+                    /&gt;
+                    {errors.title &amp;&amp; &lt;p className=&quot;text-red-600&quot; role=&quot;alert&quot;&gt;{errors.title.message}&lt;/p&gt;}
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;description&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Description&#39;)}&lt;/label&gt;
+                    &lt;textarea
+                        id=&quot;description&quot;
+                        {...register(&#39;description&#39;)}
+                        className=&quot;border p-2 w-full&quot;
+                    /&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;category_id&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Category&#39;)}&lt;/label&gt;
+                    &lt;select
+                        id=&quot;category_id&quot;
+                        {...register(&#39;category_id&#39;)}
+                        className=&quot;border p-2 w-full&quot;
+                    &gt;
+                        &lt;option value=&quot;&quot;&gt;{t(&#39;Select a category&#39;)}&lt;/option&gt;
+                        {categories.map((category) =&gt; (
+                            &lt;option key={category.id} value={category.id}&gt;
+                                {category.name}
+                            &lt;/option&gt;
+                        ))}
+                    &lt;/select&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;subcategory_id&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Subcategory&#39;)}&lt;/label&gt;
+                    &lt;select
+                        id=&quot;subcategory_id&quot;
+                        {...register(&#39;subcategory_id&#39;)}
+                        className=&quot;border p-2 w-full&quot;
+                        disabled={!categoryId}
+                    &gt;
+                        &lt;option value=&quot;&quot;&gt;{t(&#39;Select a subcategory&#39;)}&lt;/option&gt;
+                        {subcategories.map((subcategory) =&gt; (
+                            &lt;option key={subcategory.id} value={subcategory.id}&gt;
+                                {subcategory.name}
+                            &lt;/option&gt;
+                        ))}
+                    &lt;/select&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;completed&quot; className=&quot;block text-gray-700&quot;&gt;
+                        &lt;input id=&quot;completed&quot; type=&quot;checkbox&quot; {...register(&#39;completed&#39;)} /&gt;
+                        {t(&#39;Completed&#39;)}
+                    &lt;/label&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                    &lt;label htmlFor=&quot;image&quot; className=&quot;block text-gray-700&quot;&gt;{t(&#39;Image&#39;)}&lt;/label&gt;
+                    &lt;input
+                        id=&quot;image&quot;
+                        type=&quot;file&quot;
+                        {...register(&#39;image&#39;)}
+                        className=&quot;border p-2 w-full&quot;
+                        accept=&quot;image/*&quot;
+                    /&gt;
+                    {task.image &amp;&amp; &lt;img src={task.image} alt={task.title} className=&quot;max-w-xs mt-2&quot; /&gt;}
+                &lt;/div&gt;
+                &lt;div className=&quot;flex space-x-2&quot;&gt;
+                    &lt;button type=&quot;submit&quot; className=&quot;bg-blue-500 text-white p-2&quot;&gt;{t(&#39;Update&#39;)}&lt;/button&gt;
+                    &lt;Link href=&quot;/tasks&quot; className=&quot;text-blue-600 hover:underline&quot;&gt;
+                        {t(&#39;Cancel&#39;)}
+                    &lt;/Link&gt;
+                &lt;/div&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
+    &lt;/AuthenticatedLayout&gt;
+);</code></pre>
+<p>};</p>
+<p>export default Edit;</p>
+<pre><code></code></pre>
+<h3 id="step-4-update-app-entry-point">Step 4: Update App Entry
+Point</h3>
+<p>Ensure all pages receive the <code>auth</code> prop by updating the
+Inertia setup.</p>
+<ul>
+<li><p><strong>Update <code>app.js</code></strong>
+(<code>resources/js/app.js</code>):</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="st">&#39;./bootstrap&#39;</span><span class="op">;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="st">&#39;./i18n&#39;</span><span class="op">;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createRoot } <span class="im">from</span> <span class="st">&#39;react-dom/client&#39;</span><span class="op">;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createInertiaApp } <span class="im">from</span> <span class="st">&#39;@inertiajs/react&#39;</span><span class="op">;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { Provider } <span class="im">from</span> <span class="st">&#39;react-redux&#39;</span><span class="op">;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { store } <span class="im">from</span> <span class="st">&#39;./Store&#39;</span><span class="op">;</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { FilterProvider } <span class="im">from</span> <span class="st">&#39;./Context/FilterContext&#39;</span><span class="op">;</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="fu">createInertiaApp</span>({</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">resolve</span><span class="op">:</span> <span class="kw">async</span> (name) <span class="kw">=&gt;</span> {</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> page <span class="op">=</span> <span class="cf">await</span> <span class="im">import</span>(<span class="vs">`./Pages/</span><span class="sc">${</span>name<span class="sc">}</span><span class="vs">.jsx`</span>)<span class="op">;</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> page<span class="op">.</span><span class="at">default</span><span class="op">;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setup</span>({ el<span class="op">,</span> App<span class="op">,</span> props }) {</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">createRoot</span>(el)<span class="op">.</span><span class="fu">render</span>(</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;</span>Provider store<span class="op">=</span>{store}<span class="op">&gt;</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;</span>FilterProvider<span class="op">&gt;</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>                    <span class="op">&lt;</span>App {<span class="op">...</span>props} <span class="op">/&gt;</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;/</span>FilterProvider<span class="op">&gt;</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;/</span>Provider<span class="op">&gt;</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        )<span class="op">;</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div></li>
+</ul>
+<h3 id="step-5-testing-the-app">Step 5: Testing the App</h3>
+<ol type="1">
+<li><p><strong>Run Locally</strong>:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">php</span> artisan serve</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run dev</span></code></pre></div></li>
+<li><p><strong>Test Navigation</strong>:</p>
+<ul>
+<li>Log in and verify the navigation bar appears on all authenticated
+pages (Dashboard, Tasks, Profile).</li>
+<li>Click navigation links to ensure SPA transitions (no full page
+reloads).</li>
+<li>Test the mobile menu by resizing the browser or using DevTools.</li>
+<li>Log out and verify redirection to the login page.</li>
+</ul></li>
+<li><p><strong>Test Existing Features</strong>:</p>
+<ul>
+<li>Create, view, edit, and delete tasks via the DataTable and
+modals.</li>
+<li>Verify image uploads, dependent dropdowns, and i18n
+translations.</li>
+</ul></li>
+<li><p><strong>Run Tests</strong>:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span></code></pre></div></li>
+</ol>
+<h3 id="summary">Summary</h3>
+<ul>
+<li><strong>Navigation Bar</strong>: Created a responsive
+<code>NavBar</code> component with SPA links for Dashboard, Tasks,
+Profile, and Logout using Inertia’s <code>Link</code> and
+<code>@headlessui/react</code>.</li>
+<li><strong>SPA Integration</strong>: Ensured client-side navigation
+with no full page reloads.</li>
+<li><strong>Accessibility</strong>: Added ARIA attributes and keyboard
+navigation support.</li>
+<li><strong>Reusable Component</strong>: Built <code>NavBar</code> and
+<code>AuthenticatedLayout</code> for consistent layout across
+pages.</li>
+<li><strong>New Pages</strong>: Added Dashboard and Profile pages with
+basic functionality.</li>
+</ul>

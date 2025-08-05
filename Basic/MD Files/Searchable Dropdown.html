@@ -1,0 +1,401 @@
+<p>Below is a detailed breakdown and implementation of a reusable
+<strong>searchable dropdown component</strong> tailored for your Laravel
+12, Inertia 2, and React.js application, based on the client selection
+dropdown from your provided code. This component is designed to be
+generic, reusable for any entity (e.g., clients, companies, statuses),
+and optimized for your use case with Shadcn UI and TypeScript. I’ll
+focus exclusively on the searchable dropdown, explaining its parts,
+functionality, and how to use it, ensuring it’s ready for you to store
+and reuse in future code.</p>
+<hr />
+<h2 id="searchable-dropdown-component"><strong>Searchable Dropdown
+Component</strong></h2>
+<p>This component provides a dropdown with a search input to filter
+options locally, supporting an “All” option, customizable search fields,
+and integration with your existing filter system. It’s built to match
+your application’s structure, using Shadcn UI’s <code>Select</code>
+component and <code>lucide-react</code> icons.</p>
+<h3 id="breakdown-of-the-component"><strong>Breakdown of the
+Component</strong></h3>
+<ol type="1">
+<li><strong>Purpose</strong>:
+<ul>
+<li>Allows users to select an option from a list (e.g., clients) with a
+search input to filter options dynamically.</li>
+<li>Supports client-side filtering for performance and an optional “All”
+option to reset filters.</li>
+<li>Integrates with your Inertia.js-based filter system to update
+server-side queries.</li>
+</ul></li>
+<li><strong>Props</strong>:
+<ul>
+<li><code>options</code>: Array of objects (e.g., clients) with an
+<code>id</code> and other fields.</li>
+<li><code>value</code>: The currently selected value (<code>id</code> or
+<code>'all'</code>).</li>
+<li><code>onChange</code>: Callback to handle selection changes,
+triggering state updates and server requests.</li>
+<li><code>placeholder</code>: Text shown when no option is
+selected.</li>
+<li><code>searchFields</code>: Fields to search on (e.g.,
+<code>['id', 'name', 'phone']</code>).</li>
+<li><code>displayField</code>: Field to display in the dropdown (e.g.,
+<code>name</code>).</li>
+<li><code>displayFormat</code>: Optional function to customize option
+display.</li>
+<li><code>icon</code>: Optional icon for the trigger.</li>
+<li><code>allOption</code>: Optional object for the “All” option (e.g.,
+<code>{ value: 'all', label: 'All Clients' }</code>).</li>
+</ul></li>
+<li><strong>Functionality</strong>:
+<ul>
+<li>Renders a dropdown with a search input inside the dropdown
+content.</li>
+<li>Filters options locally based on user input in the search
+field.</li>
+<li>Updates the parent component’s state and triggers server requests
+when an option is selected.</li>
+<li>Resets the filtered list when the dropdown closes to ensure all
+options are available on reopen.</li>
+</ul></li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Client-side filtering for fast performance.</li>
+<li>Type-safe with TypeScript.</li>
+<li>Accessible with Shadcn UI’s <code>Select</code> component.</li>
+<li>Customizable display and search logic.</li>
+<li>Optional “All” option for filter resets.</li>
+</ul></li>
+</ol>
+<h3 id="implementation"><strong>Implementation</strong></h3>
+<p>Here’s the complete <code>SearchableSelect</code> component, ready to
+be stored and reused in your application.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { Select<span class="op">,</span> SelectTrigger<span class="op">,</span> SelectValue<span class="op">,</span> SelectContent<span class="op">,</span> SelectItem } <span class="im">from</span> <span class="st">&#39;@/components/ui/select&#39;</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { Input } <span class="im">from</span> <span class="st">&#39;@/components/ui/input&#39;</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { Search } <span class="im">from</span> <span class="st">&#39;lucide-react&#39;</span><span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { useState<span class="op">,</span> useEffect } <span class="im">from</span> <span class="st">&#39;react&#39;</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Option <span class="op">=</span> {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    id<span class="op">:</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    [key<span class="op">:</span> <span class="dt">string</span>]<span class="op">:</span> <span class="dt">any</span><span class="op">;</span> <span class="co">// Allow additional fields</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> SearchableSelectProps <span class="op">=</span> {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    options<span class="op">:</span> Option[]<span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    value<span class="op">:</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">number</span> <span class="op">|</span> <span class="st">&#39;all&#39;</span><span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    onChange<span class="op">:</span> (value<span class="op">:</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">number</span> <span class="op">|</span> <span class="st">&#39;all&#39;</span>) <span class="kw">=&gt;</span> <span class="dt">void</span><span class="op">;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    placeholder<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    searchFields<span class="op">:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    displayField<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    displayFormat<span class="op">?:</span> (option<span class="op">:</span> Option) <span class="kw">=&gt;</span> <span class="dt">string</span><span class="op">;</span> <span class="co">// Optional custom display format</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    icon<span class="op">?:</span> React<span class="op">.</span><span class="at">ReactNode</span><span class="op">;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    allOption<span class="op">?:</span> { value<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> label<span class="op">:</span> <span class="dt">string</span> }<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="im">default</span> <span class="kw">function</span> <span class="fu">SearchableSelect</span>({</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    options<span class="op">,</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    value<span class="op">,</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    onChange<span class="op">,</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    placeholder<span class="op">,</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    searchFields<span class="op">,</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    displayField<span class="op">,</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    displayFormat<span class="op">,</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    icon<span class="op">,</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    allOption <span class="op">=</span> { value<span class="op">:</span> <span class="st">&#39;all&#39;</span><span class="op">,</span> label<span class="op">:</span> <span class="st">&#39;All&#39;</span> }<span class="op">,</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>}<span class="op">:</span> SearchableSelectProps) {</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> [filteredOptions<span class="op">,</span> setFilteredOptions] <span class="op">=</span> <span class="fu">useState</span><span class="op">&lt;</span>Option[]<span class="op">&gt;</span>(options)<span class="op">;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> [searchTerm<span class="op">,</span> setSearchTerm] <span class="op">=</span> <span class="fu">useState</span>(<span class="st">&#39;&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Reset filtered options when options change or dropdown closes</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">useEffect</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setFilteredOptions</span>(options)<span class="op">;</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setSearchTerm</span>(<span class="st">&#39;&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span> [options])<span class="op">;</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Handle search input</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> handleSearch <span class="op">=</span> (term<span class="op">:</span> <span class="dt">string</span>) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setSearchTerm</span>(term)<span class="op">;</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> lowerSearch <span class="op">=</span> term<span class="op">.</span><span class="fu">toLowerCase</span>()<span class="op">;</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">setFilteredOptions</span>(</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>            options<span class="op">.</span><span class="fu">filter</span>(option <span class="kw">=&gt;</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>                searchFields<span class="op">.</span><span class="fu">some</span>(field <span class="kw">=&gt;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>                    option[field]<span class="op">?.</span><span class="fu">toString</span>()<span class="op">.</span><span class="fu">toLowerCase</span>()<span class="op">.</span><span class="fu">includes</span>(lowerSearch)</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        )<span class="op">;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;</span>Select</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>            value<span class="op">=</span>{value<span class="op">.</span><span class="fu">toString</span>()}</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>            onValueChange<span class="op">=</span>{(val) <span class="kw">=&gt;</span> <span class="fu">onChange</span>(val <span class="op">===</span> allOption<span class="op">.</span><span class="at">value</span> <span class="op">?</span> allOption<span class="op">.</span><span class="at">value</span> <span class="op">:</span> val)}</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>            onOpenChange<span class="op">=</span>{(open) <span class="kw">=&gt;</span> <span class="op">!</span>open <span class="op">&amp;&amp;</span> (<span class="fu">setFilteredOptions</span>(options)<span class="op">,</span> <span class="fu">setSearchTerm</span>(<span class="st">&#39;&#39;</span>))}</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>        <span class="op">&gt;</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;</span>SelectTrigger className<span class="op">=</span><span class="st">&quot;w-[250px]&quot;</span><span class="op">&gt;</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>                {icon <span class="op">&amp;&amp;</span> <span class="op">&lt;</span>span className<span class="op">=</span><span class="st">&quot;mr-2&quot;</span><span class="op">&gt;</span>{icon}<span class="op">&lt;/</span>span<span class="op">&gt;</span>}</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;</span>SelectValue placeholder<span class="op">=</span>{placeholder}<span class="op">&gt;</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>                    {value <span class="op">===</span> allOption<span class="op">.</span><span class="at">value</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>                        <span class="op">?</span> allOption<span class="op">.</span><span class="at">label</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>                        <span class="op">:</span> options<span class="op">.</span><span class="fu">find</span>(option <span class="kw">=&gt;</span> option<span class="op">.</span><span class="at">id</span><span class="op">.</span><span class="fu">toString</span>() <span class="op">===</span> value<span class="op">.</span><span class="fu">toString</span>())<span class="op">?.</span>[displayField] <span class="op">||</span> placeholder}</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;/</span>SelectValue<span class="op">&gt;</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;/</span>SelectTrigger<span class="op">&gt;</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;</span>SelectContent<span class="op">&gt;</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;</span>div className<span class="op">=</span><span class="st">&quot;p-2&quot;</span><span class="op">&gt;</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>                    <span class="op">&lt;</span>div className<span class="op">=</span><span class="st">&quot;relative&quot;</span><span class="op">&gt;</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>                        <span class="op">&lt;</span>Search className<span class="op">=</span><span class="st">&quot;absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400&quot;</span> <span class="op">/&gt;</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>                        <span class="op">&lt;</span>Input</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>                            <span class="kw">type</span><span class="op">=</span><span class="st">&quot;text&quot;</span></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>                            placeholder<span class="op">=</span>{<span class="vs">`Search </span><span class="sc">${</span>placeholder<span class="op">.</span><span class="fu">toLowerCase</span>()<span class="sc">}</span><span class="vs">...`</span>}</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>                            value<span class="op">=</span>{searchTerm}</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>                            onChange<span class="op">=</span>{(e) <span class="kw">=&gt;</span> <span class="fu">handleSearch</span>(e<span class="op">.</span><span class="at">target</span><span class="op">.</span><span class="at">value</span>)}</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>                            className<span class="op">=</span><span class="st">&quot;pl-8&quot;</span></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>                            aria<span class="op">-</span>label<span class="op">=</span>{<span class="vs">`Search </span><span class="sc">${</span>placeholder<span class="op">.</span><span class="fu">toLowerCase</span>()<span class="sc">}</span><span class="vs">`</span>}</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>                        <span class="op">/&gt;</span></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>                    <span class="op">&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>                <span class="op">&lt;/</span>div<span class="op">&gt;</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>                {allOption <span class="op">&amp;&amp;</span> <span class="op">&lt;</span>SelectItem value<span class="op">=</span>{allOption<span class="op">.</span><span class="at">value</span>}<span class="op">&gt;</span>{allOption<span class="op">.</span><span class="at">label</span>}<span class="op">&lt;/</span>SelectItem<span class="op">&gt;</span>}</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>                {filteredOptions<span class="op">.</span><span class="fu">map</span>((option) <span class="kw">=&gt;</span> (</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>                    <span class="op">&lt;</span>SelectItem key<span class="op">=</span>{option<span class="op">.</span><span class="at">id</span>} value<span class="op">=</span>{option<span class="op">.</span><span class="at">id</span><span class="op">.</span><span class="fu">toString</span>()}<span class="op">&gt;</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>                        {displayFormat <span class="op">?</span> <span class="fu">displayFormat</span>(option) <span class="op">:</span> option[displayField]}</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>                    <span class="op">&lt;/</span>SelectItem<span class="op">&gt;</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>                ))}</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;/</span>SelectContent<span class="op">&gt;</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>        <span class="op">&lt;/</span>Select<span class="op">&gt;</span></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="how-to-use-in-your-application"><strong>How to Use in Your
+Application</strong></h3>
+<ol type="1">
+<li><p><strong>For Client Selection</strong>: Use the component in your
+<code>Index.tsx</code> to replace the client dropdown.</p>
+<pre class="tsx"><code>import SearchableSelect from &#39;@/components/SearchableSelect&#39;;
+import { User } from &#39;lucide-react&#39;;
+
+// In the component:
+&lt;SearchableSelect
+    options={client_list.filter((client): client is Client =&gt; client !== null)}
+    value={filterClient}
+    onChange={handleClientChanged}
+    placeholder=&quot;All Clients&quot;
+    searchFields={[&#39;id&#39;, &#39;name&#39;, &#39;phone&#39;, &#39;address&#39;]}
+    displayField=&quot;name&quot;
+    displayFormat={(option) =&gt; `${option.name} - ${option.phone} - ${option.address}`}
+    icon={&lt;User className=&quot;h-4 w-4 text-gray-400&quot; /&gt;}
+    allOption={{ value: &#39;all&#39;, label: &#39;All Clients&#39; }}
+/&gt;</code></pre>
+<p><strong>Explanation</strong>:</p>
+<ul>
+<li><code>options</code>: Filters out <code>null</code> clients from
+<code>client_list</code>.</li>
+<li><code>value</code>: Uses <code>filterClient</code> state from the
+parent.</li>
+<li><code>onChange</code>: Uses <code>handleClientChanged</code> to
+update <code>filterClient</code> and trigger
+<code>fetchContacts</code>.</li>
+<li><code>searchFields</code>: Searches on <code>id</code>,
+<code>name</code>, <code>phone</code>, and <code>address</code>.</li>
+<li><code>displayField</code>: Uses <code>name</code> as the default
+display field.</li>
+<li><code>displayFormat</code>: Customizes the option display to show
+<code>name - phone - address</code>.</li>
+<li><code>icon</code>: Adds the <code>User</code> icon for
+consistency.</li>
+<li><code>allOption</code>: Provides the “All Clients” option.</li>
+</ul></li>
+<li><p><strong>For Company Selection</strong>: Use the same component
+for the company dropdown.</p>
+<pre class="tsx"><code>import SearchableSelect from &#39;@/components/SearchableSelect&#39;;
+import { Building2 } from &#39;lucide-react&#39;;
+
+// In the component:
+&lt;SearchableSelect
+    options={company_list}
+    value={filterCompany}
+    onChange={handleCompanyChanged}
+    placeholder=&quot;All Companies&quot;
+    searchFields={[&#39;id&#39;, &#39;name&#39;, &#39;email&#39;, &#39;phone&#39;, &#39;address&#39;]}
+    displayField=&quot;name&quot;
+    icon={&lt;Building2 className=&quot;h-4 w-4 text-gray-400&quot; /&gt;}
+    allOption={{ value: &#39;all&#39;, label: &#39;All Companies&#39; }}
+/&gt;</code></pre>
+<p><strong>Explanation</strong>:</p>
+<ul>
+<li>Adjusts <code>options</code>, <code>value</code>,
+<code>onChange</code>, and <code>searchFields</code> for companies.</li>
+<li>Omits <code>displayFormat</code> to use the default
+<code>name</code> field.</li>
+</ul></li>
+<li><p><strong>For Other Filters (e.g., Status)</strong>: Create a
+static list of statuses for a status filter.</p>
+<pre class="tsx"><code>const statuses = [
+    { id: &#39;pending&#39;, name: &#39;Pending&#39; },
+    { id: &#39;completed&#39;, name: &#39;Completed&#39; },
+    { id: &#39;canceled&#39;, name: &#39;Canceled&#39; },
+];
+
+&lt;SearchableSelect
+    options={statuses}
+    value={filterStatus}
+    onChange={(value) =&gt; {
+        setFilterStatus(value);
+        fetchContacts({ status: value === &#39;all&#39; ? null : value, page: 1 });
+    }}
+    placeholder=&quot;All Statuses&quot;
+    searchFields={[&#39;id&#39;, &#39;name&#39;]}
+    displayField=&quot;name&quot;
+    allOption={{ value: &#39;all&#39;, label: &#39;All Statuses&#39; }}
+/&gt;</code></pre>
+<p><strong>Explanation</strong>:</p>
+<ul>
+<li>Uses a static array for <code>options</code>.</li>
+<li>Integrates with a <code>filterStatus</code> state and
+<code>fetchContacts</code> for filtering contacts by status.</li>
+</ul></li>
+</ol>
+<h3 id="key-methods-and-techniques"><strong>Key Methods and
+Techniques</strong></h3>
+<ol type="1">
+<li><strong>Client-Side Filtering</strong>:
+<ul>
+<li><p>The <code>handleSearch</code> function filters options
+locally:</p>
+<pre class="tsx"><code>const handleSearch = (term: string) =&gt; {
+    setSearchTerm(term);
+    const lowerSearch = term.toLowerCase();
+    setFilteredOptions(
+        options.filter(option =&gt;
+            searchFields.some(field =&gt;
+                option[field]?.toString().toLowerCase().includes(lowerSearch)
+            )
+        )
+    );
+};</code></pre></li>
+<li><p>Uses <code>some</code> to check if any <code>searchFields</code>
+match the search term.</p></li>
+<li><p>Converts values to strings and lowercases them for
+case-insensitive search.</p></li>
+</ul></li>
+<li><strong>Reset on Close</strong>:
+<ul>
+<li><p>The <code>onOpenChange</code> prop resets
+<code>filteredOptions</code> and <code>searchTerm</code> when the
+dropdown closes:</p>
+<pre class="tsx"><code>onOpenChange={(open) =&gt; !open &amp;&amp; (setFilteredOptions(options), setSearchTerm(&#39;&#39;))}</code></pre></li>
+</ul></li>
+<li><strong>Custom Display</strong>:
+<ul>
+<li><p>The <code>displayFormat</code> prop allows custom rendering of
+options:</p>
+<pre class="tsx"><code>displayFormat={(option) =&gt; `${option.name} - ${option.phone} - ${option.address}`}</code></pre></li>
+</ul></li>
+<li><strong>Type Safety</strong>:
+<ul>
+<li><p>The <code>Option</code> type allows flexible fields while
+requiring an <code>id</code>:</p>
+<pre class="tsx"><code>type Option = {
+    id: string | number;
+    [key: string]: any;
+};</code></pre></li>
+</ul></li>
+<li><strong>Accessibility</strong>:
+<ul>
+<li><p>Adds <code>aria-label</code> to the search input for screen
+readers:</p>
+<pre class="tsx"><code>aria-label={`Search ${placeholder.toLowerCase()}`}</code></pre></li>
+</ul></li>
+</ol>
+<h3 id="how-to-extend"><strong>How to Extend</strong></h3>
+<ol type="1">
+<li><strong>Add Debouncing</strong>:
+<ul>
+<li><p>Install <code>lodash</code> and debounce the search:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install lodash</span></code></pre></div>
+<pre class="tsx"><code>import { debounce } from &#39;lodash&#39;;
+const debouncedHandleSearch = debounce(handleSearch, 300);
+// Use debouncedHandleSearch in the Input onChange</code></pre></li>
+</ul></li>
+<li><strong>Server-Side Search</strong>:
+<ul>
+<li><p>If the option list is large, fetch filtered options from the
+server:</p>
+<pre class="tsx"><code>const handleSearch = (term: string) =&gt; {
+    setSearchTerm(term);
+    router.get(
+        &#39;/search-options&#39;,
+        { search: term, entity: &#39;clients&#39; },
+        {
+            preserveState: true,
+            onSuccess: (page) =&gt; setFilteredOptions(page.props.filteredOptions),
+        }
+    );
+};</code></pre></li>
+<li><p>Add a Laravel route/controller to handle the search.</p></li>
+</ul></li>
+<li><strong>Custom Styling</strong>:
+<ul>
+<li><p>Adjust Tailwind classes in <code>SelectTrigger</code> or
+<code>SelectContent</code>:</p>
+<pre class="tsx"><code>&lt;SelectTrigger className=&quot;w-[300px] border-gray-300 dark:border-gray-600&quot;&gt;</code></pre></li>
+</ul></li>
+<li><strong>Multi-Field Display in Trigger</strong>:
+<ul>
+<li><p>Show multiple fields in the trigger:</p>
+<pre class="tsx"><code>&lt;SelectValue placeholder={placeholder}&gt;
+    {value === allOption.value
+        ? allOption.label
+        : (() =&gt; {
+              const option = options.find(opt =&gt; opt.id.toString() === value.toString());
+              return option ? displayFormat ? displayFormat(option) : option[displayField] : placeholder;
+          })()}
+&lt;/SelectValue&gt;</code></pre></li>
+</ul></li>
+</ol>
+<h3 id="integration-with-your-application"><strong>Integration with Your
+Application</strong></h3>
+<ul>
+<li><strong>Parent State</strong>: Pass the filter state (e.g.,
+<code>filterClient</code>) and update function (e.g.,
+<code>handleClientChanged</code>) to integrate with your existing filter
+system.</li>
+<li><strong>Server Requests</strong>: Use the <code>onChange</code> prop
+to call <code>fetchContacts</code> with the selected value, as in your
+original code.</li>
+<li><strong>Data Source</strong>: Ensure <code>options</code> are
+fetched from the server (e.g., <code>client_list</code>,
+<code>company_list</code>) or defined statically for simple cases.</li>
+</ul>
+<h3 id="best-practices"><strong>Best Practices</strong></h3>
+<ol type="1">
+<li><strong>Performance</strong>:
+<ul>
+<li>Use client-side filtering for small-to-medium lists (&lt;1000
+options).</li>
+<li>Consider server-side search for large datasets.</li>
+</ul></li>
+<li><strong>Type Safety</strong>:
+<ul>
+<li>Validate <code>options</code> to ensure <code>id</code> and
+<code>displayField</code> exist.</li>
+<li>Use TypeScript to enforce prop types.</li>
+</ul></li>
+<li><strong>Accessibility</strong>:
+<ul>
+<li>Ensure <code>aria-label</code> and keyboard navigation are
+supported.</li>
+<li>Test with screen readers.</li>
+</ul></li>
+<li><strong>Consistency</strong>:
+<ul>
+<li>Match Tailwind classes with your app’s design.</li>
+<li>Use consistent icons (e.g., <code>lucide-react</code>) across
+dropdowns.</li>
+</ul></li>
+</ol>
+<hr />
+<p>This <code>SearchableSelect</code> component is ready to be stored
+and reused in your future code. It’s flexible, type-safe, and aligns
+with your application’s structure. If you need specific tweaks (e.g.,
+server-side search, additional styling, or specific entity support), let
+me know, and I can provide a tailored version!</p>

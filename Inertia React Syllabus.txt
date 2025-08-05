@@ -1,0 +1,75 @@
+=> Learn Inertia.js
+    # Introduction
+    # Install and Setup Laravel/Inertia.js with React
+    # Overview of the Project
+    # Creating Pages
+    # Title and Meta Tags
+    # Passing Data to Pages
+    # Swapping to API Resources
+    # Form Basics
+    # Submitting Forms
+    # Resetting Forms
+    # Clearing Validation Errors
+    # Accessing Form Processing State
+    # Manual Visits and Partial Reloads
+    # Partial Visits (and more) with Links
+    # Shared Data
+    # Making Use of Ziggy
+    # Hooking into Forms for Flash Messages
+    # Revisiting Shared Data for Better Flash Messages
+    # Shorthand Routes
+    # Remembering Form States
+    # Preserving States
+    # Basic Authorization
+
+
+=> Flexible Flash Notifications in Inertia
+    # Reusing the Flash Notifications code for multiple pages
+    # Improving the Flash Notifications flow
+    # Fix Flash Notification Issues
+
+
+=> Customizing Error Pages in Inertia
+    # Customizing the default Error page
+    # Returning an Inertia Response
+    # Handling Multiple Error Types with a Single Component
+    # Define a Config to Show/Hide Custom Error Pages
+
+
+=> Implementing Roles and Permissions in Inertia Based Applications
+    # Introduction to Implementing Roles/Permissions in Inertia based Applications
+    # Database Structure Overview
+    # Define the Models/Migrations/Pivot Tables/Seeders for Roles/Permissions
+    # Displaying and Deleting Roles
+    # Storing Roles
+    # Editing Roles
+    # Implement Permissions Selection on Role Create Page
+    # Implement Permissions Selection on Role Edit Page
+    # Defining the Auth Gates with a Middleware
+    # Implementing Checks on the Backend
+    # Implementing Checks on the Frontend
+
+
+=> Learn how to Implement Infinite Scrolling in Inertia Based Applications
+    # Introduction to Implementing Infinite Scrolling in Inertia Based Applications
+    # Install and Configure a new Laravel Project
+    # Setup Model/Migration/Factory/Seeder
+    # Displaying the Posts Data
+    # Let's Implement useIntersectionOnserver
+    # Let's Start Implementing Infinite Scrolling Behaviour
+    # Use Axios instead of Inertia's router
+    # Finalizing the Infinite Scrolling Feature
+    # Fix Remaining Issues
+
+
+=> Learn how to Implement Translations in Laravel and Inertia
+    Introduction to Implementing Translations in Laravel and Inertia
+    Install and Setup a Fresh Laravel Project
+    Storing available languages with an Enum
+    Sharing available languages globally
+    Building the Language Selector
+    Storing the chosen Language in a Session
+    Setting the locale through a Middleware
+    Sharing all translations with Inertia
+    Building a Translation helper in Javascript
+    Caching Translations

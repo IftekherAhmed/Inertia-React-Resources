@@ -1,0 +1,16 @@
+import { Link } from '@inertiajs/react';
+
+export default function Users({ users }) {
+    return (
+        <div className="p-6">
+            <h1 className="text-2xl font-bold">Users</h1>
+            <ul>
+                {users.map((user) => (
+                    <li key={user.id} className="mt-2">
+                        <Link href={`/users/${user.id}`}>{user.name}</Link>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
