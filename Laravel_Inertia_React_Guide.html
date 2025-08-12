@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel, Inertia, and React Js</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Step-by-Step Guide to Building Advanced DataTables with Laravel, Inertia, and React</h1>
+        <p>I'll guide you through building an advanced data table step by step, following the patterns in your code but explaining each concept thoroughly.</p>
+
+        <!-- Tab Start -->
+        <nav>
+            <!-- Nav tabs -->
+            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-step1-tab" data-bs-toggle="tab" data-bs-target="#nav-step1" type="button" role="tab" aria-controls="nav-step1" aria-selected="true">Step 1: Basic Listing</button>
+                <button class="nav-link" id="nav-step2-tab" data-bs-toggle="tab" data-bs-target="#nav-step2" type="button" role="tab" aria-controls="nav-step2" aria-selected="false">Step 2: Pagination</button>
+                <button class="nav-link" id="nav-step3-tab" data-bs-toggle="tab" data-bs-target="#nav-step3" type="button" role="tab" aria-controls="nav-step3" aria-selected="false">Step 3: Search</button>
+                <button class="nav-link" id="nav-step4-tab" data-bs-toggle="tab" data-bs-target="#nav-step4" type="button" role="tab" aria-controls="nav-step4" aria-selected="false">Step 4: Filters</button>
+                <button class="nav-link" id="nav-step5-tab" data-bs-toggle="tab" data-bs-target="#nav-step5" type="button" role="tab" aria-controls="nav-step5" aria-selected="false">Step 5: Sorting</button>
+                <button class="nav-link" id="nav-step6-tab" data-bs-toggle="tab" data-bs-target="#nav-step6" type="button" role="tab" aria-controls="nav-step6" aria-selected="false">Step 6: Create</button>
+                <button class="nav-link" id="nav-step7-tab" data-bs-toggle="tab" data-bs-target="#nav-step7" type="button" role="tab" aria-controls="nav-step7" aria-selected="false">Step 7: Update</button>
+                <button class="nav-link" id="nav-enhancements-tab" data-bs-toggle="tab" data-bs-target="#nav-enhancements" type="button" role="tab" aria-controls="nav-enhancements" aria-selected="false">Enhancements</button>
+                <button class="nav-link" id="nav-bestpractices-tab" data-bs-toggle="tab" data-bs-target="#nav-bestpractices" type="button" role="tab" aria-controls="nav-bestpractices" aria-selected="false">Best Practices</button>
+            </div>
+            <!-- End Nav tabs -->
+        </nav>
+
+        <!-- Tab content -->
+        <div class="tab-content p-3 border bg-light" id="nav-tabContent">
+            <div class="tab-pane fade active show" id="nav-step1" role="tabpanel" aria-labelledby="nav-step1-tab">
+                <h2>1. Basic Listing</h2>
+                <h3>Backend (Laravel Controller)</h3>
+                <p>First, set up a basic controller method to fetch and return data:</p>
+                <pre class="bg-light border rounded p-3">
+// In your Client.php controller
+public function index(Request $request)
+{
+    $clients = ModelsClient::query()
+        ->with('company') // Eager load company relationship
+        ->get();
+    
+    return Inertia::render('Client/Index', [
+        'client_list' => $clients,
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+    ]);
+}
+                </pre>
+                <h3>Frontend (React Component)</h3>
+                <p>Create a basic listing component:</p>
+                <pre class="bg-light border rounded p-3">
+// Index.tsx
+import AppLayout from '@/layouts/app-layout';
+import { Head } from '@inertiajs/react';
+
+type Client = {
+    id: number;
+    name: string;
+    profession: string;
+    company: {
+        name: string;
+    } | null;
+};
+
+type Props = {
+    client_list: Client[];
+    company_list: any[]; // Define proper type later
+};
+
+export default function Index({ client_list, company_list }: Props) {
+    return (
+        &lt;AppLayout&gt;
+            &lt;Head title="Clients" /&gt;
+            
+            &lt;div className="flex flex-col gap-4 p-4"&gt;
+                &lt;h1 className="text-2xl font-bold"&gt;Clients&lt;/h1&gt;
+                
+                &lt;table className="min-w-full border"&gt;
+                    &lt;thead&gt;
+                        &lt;tr&gt;
+                            &lt;th className="px-4 py-2 text-left"&gt;ID&lt;/th&gt;
+                            &lt;th className="px-4 py-2 text-left"&gt;Name&lt;/th&gt;
+                            &lt;th className="px-4 py-2 text-left"&gt;Profession&lt;/th&gt;
+                            &lt;th className="px-4 py-2 text-left"&gt;Company&lt;/th&gt;
+                        &lt;/tr&gt;
+                    &lt;/thead&gt;
+                    &lt;tbody&gt;
+                        {client_list.map((client) => (
+                            &lt;tr key={client.id}&gt;
+                                &lt;td className="px-4 py-2"&gt;{client.id}&lt;/td&gt;
+                                &lt;td className="px-4 py-2"&gt;{client.name}&lt;/td&gt;
+                                &lt;td className="px-4 py-2"&gt;{client.profession}&lt;/td&gt;
+                                &lt;td className="px-4 py-2"&gt;
+                                    {client.company?.name || '-'}
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        ))}
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/div&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step2" role="tabpanel" aria-labelledby="nav-step2-tab">
+                <h2>2. Adding Pagination</h2>
+                <h3>Backend Changes</h3>
+                <p>Modify the controller to handle pagination:</p>
+                <pre class="bg-light border rounded p-3">
+public function index(Request $request)
+{
+    $perPage = $request->input('per_page', 10); // Default 10 per page
+    
+    $clients = ModelsClient::query()
+        ->with('company')
+        ->paginate($perPage);
+    
+    return Inertia::render('Client/Index', [
+        'client_list' => $clients->items(),
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+        'pagination' => [
+            'current_page' => $clients->currentPage(),
+            'last_page' => $clients->lastPage(),
+            'per_page' => $clients->perPage(),
+            'total' => $clients->total(),
+        ],
+    ]);
+}
+                </pre>
+                <h3>Frontend Changes</h3>
+                <p>Add pagination controls:</p>
+                <pre class="bg-light border rounded p-3">
+// Add to your Index.tsx
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+
+type Pagination = {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};
+
+type Props = {
+    client_list: Client[];
+    company_list: any[];
+    pagination: Pagination;
+};
+
+export default function Index({ client_list, company_list, pagination }: Props) {
+    const [perPage, setPerPage] = useState(pagination.per_page);
+    
+    const handlePageChange = (page: number) => {
+        router.get('/client', { page }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+    
+    const handlePerPageChange = (value: string) => {
+        const newPerPage = value === 'all' ? 0 : Number(value);
+        setPerPage(newPerPage);
+        router.get('/client', { per_page: newPerPage, page: 1 }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            {/* ... existing table code ... */}
+            
+            &lt;div className="flex justify-between items-center mt-4"&gt;
+                &lt;div&gt;
+                    &lt;select 
+                        value={perPage}
+                        onChange={(e) => handlePerPageChange(e.target.value)}
+                        className="border rounded p-1"
+                    &gt;
+                        &lt;option value="10"&gt;10 per page&lt;/option&gt;
+                        &lt;option value="25"&gt;25 per page&lt;/option&gt;
+                        &lt;option value="50"&gt;50 per page&lt;/option&gt;
+                        &lt;option value="all"&gt;All&lt;/option&gt;
+                    &lt;/select&gt;
+                &lt;/div&gt;
+                
+                &lt;div className="flex gap-1"&gt;
+                    {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map(page => (
+                        &lt;button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-1 rounded ${pagination.current_page === page ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                        &gt;
+                            {page}
+                        &lt;/button&gt;
+                    ))}
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step3" role="tabpanel" aria-labelledby="nav-step3-tab">
+                <h2>3. Adding Search Functionality</h2>
+                <h3>Backend Changes</h3>
+                <p>Update the controller to handle search:</p>
+                <pre class="bg-light border rounded p-3">
+public function index(Request $request)
+{
+    $perPage = $request->input('per_page', 10);
+    $search = $request->input('search');
+    
+    $query = ModelsClient::query()
+        ->with('company');
+    
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%$search%")
+              ->orWhere('email', 'like', "%$search%")
+              ->orWhere('phone', 'like', "%$search%");
+        });
+    }
+    
+    $clients = $query->paginate($perPage);
+    
+    return Inertia::render('Client/Index', [
+        'client_list' => $clients->items(),
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+        'pagination' => [
+            'current_page' => $clients->currentPage(),
+            'last_page' => $clients->lastPage(),
+            'per_page' => $clients->perPage(),
+            'total' => $clients->total(),
+        ],
+        'filters' => [
+            'search' => $search,
+        ],
+    ]);
+}
+                </pre>
+                <h3>Frontend Changes</h3>
+                <p>Add search input:</p>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+type Props = {
+    // ... existing props
+    filters: {
+        search?: string;
+    };
+};
+
+export default function Index({ client_list, company_list, pagination, filters }: Props) {
+    const [searchQuery, setSearchQuery] = useState(filters.search || '');
+    
+    const handleSearchChange = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) => {
+        setSearchQuery(e.target.value);
+        // Debounce this in production
+        router.get('/client', { search: e.target.value, page: 1 }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            {/* Add search input above the table */}
+2024-10-23 16:05:42,806 - &lt;div className="mb-4"&gt;
+                &lt;input
+                    type="text"
+                    placeholder="Search clients..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="border rounded p-2 w-full max-w-md"
+                /&gt;
+            &lt;/div&gt;
+            
+            {/* ... rest of the code ... */}
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step4" role="tabpanel" aria-labelledby="nav-step4-tab">
+                <h2>4. Adding Filters</h2>
+                <h3>Backend Changes</h3>
+                <p>Update controller for company filter:</p>
+                <pre class="bg-light border rounded p-3">
+public function index(Request $request)
+{
+    $perPage = $request->input('per_page', 10);
+    $search = $request->input('search');
+    $companyId = $request->input('company_id');
+    
+    $query = ModelsClient::query()
+        ->with('company');
+    
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%$search%")
+              ->orWhere('email', 'like', "%$search%")
+              ->orWhere('phone', 'like', "%$search%");
+        });
+    }
+    
+    if ($companyId && $companyId !== 'all') {
+        $query->where('company_id', $companyId);
+    }
+    
+    $clients = $query->paginate($perPage);
+    
+    return Inertia::render('Client/Index', [
+        'client_list' => $clients->items(),
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+        'pagination' => [
+            'current_page' => $clients->currentPage(),
+            'last_page' => $clients->lastPage(),
+            'per_page' => $clients->perPage(),
+            'total' => $clients->total(),
+        ],
+        'filters' => [
+            'search' => $search,
+            'company_id' => $companyId,
+        ],
+    ]);
+}
+                </pre>
+                <h3>Frontend Changes</h3>
+                <p>Add company filter dropdown:</p>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+type Company = {
+    id: number;
+    name: string;
+};
+
+type Props = {
+    // ... existing props
+    company_list: Company[];
+    filters: {
+        search?: string;
+        company_id?: number | string;
+    };
+};
+
+export default function Index({ client_list, company_list, pagination, filters }: Props) {
+    const [filterCompany, setFilterCompany] = useState(filters.company_id || 'all');
+    
+    const handleCompanyChange = (value: string) => {
+        setFilterCompany(value);
+        router.get('/client', { 
+            company_id: value === 'all' ? null : value,
+            page: 1 
+        }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            &lt;div className="mb-4 flex gap-4"&gt;
+                {/* Search input */}
+                &lt;input
+                    type="text"
+                    placeholder="Search clients..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="border rounded p-2 w-full max-w-md"
+                /&gt;
+                
+                {/* Company filter */}
+                &lt;select
+                    value={filterCompany}
+                    onChange={(e) => handleCompanyChange(e.target.value)}
+                    className="border rounded p-2"
+                &gt;
+                    &lt;option value="all"&gt;All Companies&lt;/option&gt;
+                    {company_list.map(company => (
+                        &lt;option key={company.id} value={company.id}&gt;
+                            {company.name}
+                        &lt;/option&gt;
+                    ))}
+                &lt;/select&gt;
+            &lt;/div&gt;
+            
+            {/* ... rest of the code ... */}
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step5" role="tabpanel" aria-labelledby="nav-step5-tab">
+                <h2>5. Adding Sorting</h2>
+                <h3>Backend Changes</h3>
+                <p>Update controller for sorting:</p>
+                <pre class="bg-light border rounded p-3">
+public function index(Request $request)
+{
+    $perPage = $request->input('per_page', 10);
+    $search = $request->input('search');
+    $companyId = $request->input('company_id');
+    $sortBy = $request->input('sort_by', 'id');
+    $sortDirection = $request->input('sort_direction', 'desc');
+    
+    $query = ModelsClient::query()
+        ->with('company');
+    
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%$search%")
+              ->orWhere('email', 'like', "%$search%")
+              ->orWhere('phone', 'like', "%$search%");
+        });
+    }
+    
+    if ($companyId && $companyId !== 'all') {
+        $query->where('company_id', $companyId);
+    }
+    
+    if ($sortBy === 'company') {
+        $query->leftJoin('company', 'client.company_id', '=', 'company.id')
+            ->orderBy('company.name', $sortDirection)
+            ->select('client.*');
+    } else {
+        $query->orderBy($sortBy, $sortDirection);
+    }
+    
+    $clients = $query->paginate($perPage);
+    
+    return Inertia::render('Client/Index', [
+        'client_list' => $clients->items(),
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+        'pagination' => [
+            'current_page' => $clients->currentPage(),
+            'last_page' => $clients->lastPage(),
+            'per_page' => $clients->perPage(),
+            'total' => $clients->total(),
+        ],
+        'filters' => [
+            'search' => $search,
+            'company_id' => $companyId,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ],
+    ]);
+}
+                </pre>
+                <h3>Frontend Changes</h3>
+                <p>Add sorting to table headers:</p>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+type Props = {
+    // ... existing props
+    filters: {
+        search?: string;
+        company_id?: number | string;
+        sort_by?: string;
+        sort_direction?: 'asc' | 'desc';
+    };
+};
+
+export default function Index({ client_list, company_list, pagination, filters }: Props) {
+    const [sortBy, setSortBy] = useState(filters.sort_by || 'id');
+    const [sortDirection, setSortDirection] = useState&lt;'asc' | 'desc'&gt;(filters.sort_direction || 'desc');
+    
+    const handleSort = (column: string) => {
+        const newDirection = sortBy === column && sortDirection === 'asc' ? 'desc' : 'asc';
+        setSortBy(column);
+        setSortDirection(newDirection);
+        
+        router.get('/client', { 
+            sort_by: column,
+            sort_direction: newDirection,
+            page: 1,
+        }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            {/* ... existing filters ... */}
+            
+            &lt;table className="min-w-full border"&gt;
+                &lt;thead&gt;
+                    &lt;tr&gt;
+                        &lt;th 
+                            className="px-4 py-2 text-left cursor-pointer"
+                            onClick={() => handleSort('id')}
+                        &gt;
+                            ID
+                            {sortBy === 'id' && (
+                                sortDirection === 'asc' ? ' ↑' : ' ↓'
+                            )}
+                        &lt;/th&gt;
+                        &lt;th 
+                            className="px-4 py-2 text-left cursor-pointer"
+                            onClick={() => handleSort('name')}
+                        &gt;
+                            Name
+                            {sortBy === 'name' && (
+                                sortDirection === 'asc' ? ' ↑' : ' ↓'
+                            )}
+                        &lt;/th&gt;
+                        {/* Add similar sorting to other columns */}
+                    &lt;/tr&gt;
+                &lt;/thead&gt;
+                {/* ... existing table body ... */}
+            &lt;/table&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step6" role="tabpanel" aria-labelledby="nav-step6-tab">
+                <h2>6. Create Functionality</h2>
+                <h3>Backend Changes</h3>
+                <p>Add create and store methods:</p>
+                <pre class="bg-light border rounded p-3">
+public function create()
+{
+    return Inertia::render('Client/Create', [
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+    ]);
+}
+
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'nullable|email|max:255',
+        'phone' => 'required|string|max:255',
+        'company_id' => 'required|exists:company,id',
+        // Add other validation rules
+    ]);
+    
+    try {
+        $client = new ModelsClient();
+        $client->name = $request->name;
+        $client->email = $request->email;
+        $client->phone = $request->phone;
+        $client->company_id = $request->company_id;
+        // Set other fields
+        $client->save();
+        
+        return redirect()->route('client.index')->with('success', 'Client created successfully!');
+    } catch (Exception $e) {
+        return back()->with('error', 'Error creating client: ' . $e->getMessage());
+    }
+}
+                </pre>
+                <h3>Frontend Create Form</h3>
+                <p>Create a new file Create.tsx:</p>
+                <pre class="bg-light border rounded p-3">
+import { Head, useForm, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
+type Company = {
+    id: number;
+    name: string;
+};
+
+type Props = {
+    company_list: Company[];
+};
+
+export default function Create({ company_list }: Props) {
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        email: '',
+        phone: '',
+        company_id: '',
+        // Add other fields
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/client');
+    };
+
+    return (
+        &lt;AppLayout&gt;
+            &lt;Head title="Create Client" /&gt;
+            
+            &lt;div className="flex flex-col gap-4 p-4"&gt;
+                &lt;h1 className="text-2xl font-bold"&gt;Create Client&lt;/h1&gt;
+                
+                &lt;form onSubmit={handleSubmit} className="space-y-4"&gt;
+                    &lt;div&gt;
+                        &lt;label htmlFor="name"&gt;Name&lt;/label&gt;
+                        &lt;Input
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                        /&gt;
+                        {errors.name && &lt;p className="text-red-500"&gt;{errors.name}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+                        &lt;Input
+                            id="email"
+                            type="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                        /&gt;
+                        {errors.email && &lt;p className="text-red-500"&gt;{errors.email}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="phone"&gt;Phone&lt;/label&gt;
+                        &lt;Input
+                            id="phone"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                        /&gt;
+                        {errors.phone && &lt;p className="text-red-500"&gt;{errors.phone}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="company_id"&gt;Company&lt;/label&gt;
+                        &lt;Select
+                            value={data.company_id}
+                            onValueChange={(value) => setData('company_id', value)}
+                        &gt;
+                            &lt;SelectTrigger&gt;
+                                &lt;SelectValue placeholder="Select company" /&gt;
+                            &lt;/SelectTrigger&gt;
+                            &lt;SelectContent&gt;
+                                {company_list.map(company => (
+                                    &lt;SelectItem key={company.id} value={company.id.toString()}&gt;
+                                        {company.name}
+                                    &lt;/SelectItem&gt;
+                                ))}
+                            &lt;/SelectContent&gt;
+                        &lt;/Select&gt;
+                        {errors.company_id && &lt;p className="text-red-500"&gt;{errors.company_id}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;Button type="submit" disabled={processing}&gt;
+                        Create Client
+                    &lt;/Button&gt;
+                &lt;/form&gt;
+            &lt;/div&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-step7" role="tabpanel" aria-labelledby="nav-step7-tab">
+                <h2>7. Update Functionality</h2>
+                <h3>Backend Changes</h3>
+                <p>Add edit and update methods:</p>
+                <pre class="bg-light border rounded p-3">
+public function edit(ModelsClient $client)
+{
+    return Inertia::render('Client/Edit', [
+        'client' => $client,
+        'company_list' => Company::orderBy('name', 'asc')->get(),
+    ]);
+}
+
+public function update(Request $request, ModelsClient $client)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'nullable|email|max:255',
+        'phone' => 'required|string|max:255',
+        'company_id' => 'required|exists:company,id',
+        // Same validation as store
+    ]);
+    
+    try {
+        $client->name = $request->name;
+        $client->email = $request->email;
+        $client->phone = $request->phone;
+        $client->company_id = $request->company_id;
+        // Update other fields
+        $client->save();
+        
+        return redirect()->route('client.index')->with('success', 'Client updated successfully!');
+    } catch (Exception $e) {
+        return back()->with('error', 'Error updating client: ' . $e->getMessage());
+    }
+}
+                </pre>
+                <h3>Frontend Edit Form</h3>
+                <p>Create Edit.tsx similar to Create but with existing data:</p>
+                <pre class="bg-light border rounded p-3">
+import { Head, useForm, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
+type Company = {
+    id: number;
+    name: string;
+};
+
+type Client = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    company_id: number;
+    // Other fields
+};
+
+type Props = {
+    client: Client;
+    company_list: Company[];
+};
+
+export default function Edit({ client, company_list }: Props) {
+    const { data, setData, put, processing, errors } = useForm({
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        company_id: client.company_id.toString(),
+        // Other fields
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        put(`/client/${client.id}`);
+    };
+
+    return (
+        &lt;AppLayout&gt;
+            &lt;Head title="Edit Client" /&gt;
+            
+            &lt;div className="flex flex-col gap-4 p-4"&gt;
+                &lt;h1 className="text-2xl font-bold"&gt;Edit Client&lt;/h1&gt;
+                
+                &lt;form onSubmit={handleSubmit} className="space-y-4"&gt;
+                    &lt;div&gt;
+                        &lt;label htmlFor="name"&gt;Name&lt;/label&gt;
+                        &lt;Input
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                        /&gt;
+                        {errors.name && &lt;p className="text-red-500"&gt;{errors.name}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+                        &lt;Input
+                            id="email"
+                            type="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                        /&gt;
+                        {errors.email && &lt;p className="text-red-500"&gt;{errors.email}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="phone"&gt;Phone&lt;/label&gt;
+                        &lt;Input
+                            id="phone"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                        /&gt;
+                        {errors.phone && &lt;p className="text-red-500"&gt;{errors.phone}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;label htmlFor="company_id"&gt;Company&lt;/label&gt;
+                        &lt;Select
+                            value={data.company_id}
+                            onValueChange={(value) => setData('company_id', value)}
+                        &gt;
+                            &lt;SelectTrigger&gt;
+                                &lt;SelectValue placeholder="Select company" /&gt;
+                            &lt;/SelectTrigger&gt;
+                            &lt;SelectContent&gt;
+                                {company_list.map(company => (
+                                    &lt;SelectItem key={company.id} value={company.id.toString()}&gt;
+                                        {company.name}
+                                    &lt;/SelectItem&gt;
+                                ))}
+                            &lt;/SelectContent&gt;
+                        &lt;/Select&gt;
+                        {errors.company_id && &lt;p className="text-red-500"&gt;{errors.company_id}&lt;/p&gt;}
+                    &lt;/div&gt;
+                    
+                    &lt;Button type="submit" disabled={processing}&gt;
+                        Update Client
+                    &lt;/Button&gt;
+                &lt;/form&gt;
+            &lt;/div&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-enhancements" role="tabpanel" aria-labelledby="nav-enhancements-tab">
+                <h2>Advanced DataTable Enhancements</h2>
+                <p>Now that we have the basic CRUD operations, let's enhance the data table:</p>
+                <h3>1. Add Action Buttons</h3>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx table row
+&lt;tr key={client.id}&gt;
+    {/* ... existing cells ... */}
+    &lt;td className="px-4 py-2 space-x-2"&gt;
+        &lt;Link 
+            href={`/client/${client.id}/edit`}
+            className="text-blue-500 hover:text-blue-700"
+        &gt;
+            Edit
+        &lt;/Link&g
+2024-10-23 16:05:42,806 - t;
+        &lt;Link
+            as="button"
+            method="delete"
+            href={`/client/${client.id}`}
+            className="text-red-500 hover:text-red-700"
+            onClick={(e) => {
+                if (!confirm('Are you sure you want to delete this client?')) {
+                    e.preventDefault();
+                }
+            }}
+        &gt;
+            Delete
+        &lt;/Link&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+                </pre>
+                <h3>2. Add View Modal</h3>
+                <p>Create a modal component:</p>
+                <pre class="bg-light border rounded p-3">
+// ClientModalView.tsx
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+type Client = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    profession: string;
+    company: {
+        name: string;
+    } | null;
+    // Other fields
+};
+
+type Props = {
+    isOpen: boolean;
+    onClose: () => void;
+    client: Client | null;
+};
+
+export default function ClientModalView({ isOpen, onClose, client }: Props) {
+    if (!client) return null;
+    
+    return (
+        &lt;Dialog open={isOpen} onOpenChange={onClose}&gt;
+            &lt;DialogContent&gt;
+                &lt;DialogHeader&gt;
+                    &lt;DialogTitle&gt;Client Details&lt;/DialogTitle&gt;
+                &lt;/DialogHeader&gt;
+                
+                &lt;div className="space-y-4"&gt;
+                    &lt;div&gt;
+                        &lt;h3 className="font-medium"&gt;Name&lt;/h3&gt;
+                        &lt;p&gt;{client.name}&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;h3 className="font-medium"&gt;Email&lt;/h3&gt;
+                        &lt;p&gt;{client.email || '-'}&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;h3 className="font-medium"&gt;Phone&lt;/h3&gt;
+                        &lt;p&gt;{client.phone}&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;div&gt;
+                        &lt;h3 className="font-medium"&gt;Company&lt;/h3&gt;
+                        &lt;p&gt;{client.company?.name || '-'}&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    {/* Add other fields */}
+                &lt;/div&gt;
+                
+                &lt;div className="flex justify-end"&gt;
+                    &lt;Button onClick={onClose}&gt;Close&lt;/Button&gt;
+                &lt;/div&gt;
+            &lt;/DialogContent&gt;
+        &lt;/Dialog&gt;
+    );
+}
+                </pre>
+                <p>Then use it in Index.tsx:</p>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+import { useState } from 'react';
+import ClientModalView from '@/components/ClientModalView';
+
+export default function Index(/* ... */) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedClient, setSelectedClient] = useState&lt;Client | null&gt;(null);
+    
+    const openModal = (client: Client) => {
+        setSelectedClient(client);
+        setIsModalOpen(true);
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            {/* ... */}
+            
+            &lt;ClientModalView 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                client={selectedClient}
+            /&gt;
+            
+            {/* In table row actions */}
+            &lt;td className="px-4 py-2 space-x-2"&gt;
+                &lt;button 
+                    onClick={() => openModal(client)}
+                    className="text-green-500 hover:text-green-700"
+                &gt;
+                    View
+                &lt;/button&gt;
+                {/* ... other actions ... */}
+            &lt;/td&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+                <h3>3. Add Export Functionality</h3>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+import { useDownloadExcel } from 'react-export-table-to-excel';
+import { useRef } from 'react';
+
+export default function Index(/* ... */) {
+    const tableRef = useRef(null);
+    const { onDownload } = useDownloadExcel({
+        currentTableRef: tableRef.current,
+        filename: 'Clients',
+        sheet: 'Clients'
+    });
+    
+    return (
+        &lt;AppLayout&gt;
+            &lt;div className="flex justify-between mb-4"&gt;
+                &lt;h1 className="text-2xl font-bold"&gt;Clients&lt;/h1&gt;
+                &lt;button 
+                    onClick={onDownload}
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                &gt;
+                    Export to Excel
+                &lt;/button&gt;
+            &lt;/div&gt;
+            
+            &lt;table ref={tableRef}&gt;
+                {/* ... table content ... */}
+            &lt;/table&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+                <h3>4. Add Bulk Actions</h3>
+                <pre class="bg-light border rounded p-3">
+// In Index.tsx
+import { useState } from 'react';
+
+export default function Index(/* ... */) {
+    const [selectedIds, setSelectedIds] = useState&lt;number[]&gt;([]);
+    
+    const toggleSelect = (id: number) => {
+        setSelectedIds(prev => 
+            prev.includes(id) 
+                ? prev.filter(i => i !== id) 
+                : [...prev, id]
+        );
+    };
+    
+    const handleBulkDelete = () => {
+        if (!selectedIds.length || !confirm('Are you sure you want to delete selected clients?')) {
+            return;
+        }
+        
+        router.delete('/client/bulk-delete', {
+            data: { ids: selectedIds },
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
+    
+    return (
+        &lt;AppLayout&gt;
+            {/* ... */}
+            
+            {selectedIds.length > 0 && (
+                &lt;div className="mb-4 p-2 bg-gray-100 rounded flex justify-between"&gt;
+                    &lt;span&gt;{selectedIds.length} selected&lt;/span&gt;
+                    &lt;button 
+                        onClick={handleBulkDelete}
+                        className="text-red-500 hover:text-red-700"
+                    &gt;
+                        Delete Selected
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            )}
+            
+            &lt;table&gt;
+                &lt;thead&gt;
+                    &lt;tr&gt;
+                        &lt;th&gt;
+                            &lt;input 
+                                type="checkbox"
+                                checked={selectedIds.length === client_list.length}
+                                onChange={() => {
+                                    if (selectedIds.length === client_list.length) {
+                                        setSelectedIds([]);
+                                    } else {
+                                        setSelectedIds(client_list.map(c => c.id));
+                                    }
+                                }}
+                            /&gt;
+                        &lt;/th&gt;
+                        {/* ... other headers ... */}
+                    &lt;/tr&gt;
+                &lt;/thead&gt;
+                &lt;tbody&gt;
+                    {client_list.map(client => (
+                        &lt;tr key={client.id}&gt;
+                            &lt;td&gt;
+                                &lt;input 
+                                    type="checkbox"
+                                    checked={selectedIds.includes(client.id)}
+                                    onChange={() => toggleSelect(client.id)}
+                                /&gt;
+                            &lt;/td&gt;
+                            {/* ... other cells ... */}
+                        &lt;/tr&gt;
+                    ))}
+                &lt;/tbody&gt;
+            &lt;/table&gt;
+        &lt;/AppLayout&gt;
+    );
+}
+                </pre>
+                <p>Add the backend route:</p>
+                <pre class="bg-light border rounded p-3">
+// In routes/web.php
+Route::delete('/client/bulk-delete', [Client::class, 'bulkDelete']);
+
+// In Client controller
+public function bulkDelete(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'exists:client,id',
+    ]);
+    
+    try {
+        ModelsClient::whereIn('id', $request->ids)->delete();
+        return back()->with('success', 'Selected clients deleted successfully!');
+    } catch (Exception $e) {
+        return back()->with('error', 'Error deleting clients: ' . $e->getMessage());
+    }
+}
+                </pre>
+            </div>
+
+            <div class="tab-pane fade" id="nav-bestpractices" role="tabpanel" aria-labelledby="nav-bestpractices-tab">
+                <h2>Best Practices and Tips</h2>
+                <h3>Component Organization:</h3>
+                <p>Break down large components into smaller reusable ones (e.g., separate filter controls, table headers)<br>Create a generic DataTable component that can be reused across your app</p>
+                <h3>Performance Optimization:</h3>
+                <p>Implement debouncing for search input to avoid too many requests<br>Use pagination and lazy loading for large datasets<br>Consider server-side rendering for initial load</p>
+                <h3>Error Handling:</h3>
+                <p>Add proper error boundaries<br>Display user-friendly error messages<br>Implement loading states</p>
+                <h3>Accessibility:</h3>
+                <p>Add proper ARIA attributes<br>Ensure keyboard navigation works<br>Provide screen reader support</p>
+                <h3>Testing:</h3>
+                <p>Write unit tests for your components<br>Test edge cases (empty states, error states)<br>Implement end-to-end tests for critical flows</p>
+                <h3>State Management:</h3>
+                <p>For complex state, consider using Zustand or other state management libraries<br>Keep URL in sync with filters for bookmarkable states</p>
+                <p>This step-by-step guide covers all the essential aspects of building an advanced data table with Laravel, Inertia, and React. Start with the basic listing and progressively add features as needed for your application.</p>
+            </div>
+        </div>
+        <!-- End Tab content -->
+    </div> 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
