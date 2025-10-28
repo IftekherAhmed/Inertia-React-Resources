@@ -545,6 +545,9 @@
                 <!-- Introduction -->
                 <?php include('inc/sections/introduction.php') ?>
                 
+                <!-- Programming Concepts -->
+                <?php include('inc/sections/programming-concepts.php') ?>
+                
                 <!-- Project Structure -->
                 <?php include('inc/sections/project-structure.php') ?>                
                 
@@ -569,14 +572,11 @@
                 <!-- Routes -->
                 <?php include('inc/sections/routes.php') ?>  
                 
-                <!-- Resources -->
-                <?php include('inc/sections/resources.php') ?>   
-                
-                <!-- ShadCN UI -->
-                <?php include('inc/sections/shadcn-ui.php') ?>     
-                
                 <!-- CRUD Operations -->
                 <?php include('inc/sections/crud-operation.php') ?>
+                
+                <!-- Validation -->
+                <?php include('inc/sections/validation.php') ?>
                 
                 <!-- Search -->
                 <?php include('inc/sections/search.php') ?>
@@ -593,20 +593,11 @@
                 <!-- Delete Operations -->
                 <?php include('inc/sections/delete.php') ?>
                 
-                <!-- Validation -->
-                <?php include('inc/sections/validation.php') ?>
-                
                 <!-- File Upload -->
                 <?php include('inc/sections/fileupload.php') ?>
                 
                 <!-- Modal View -->
                 <?php include('inc/sections/modalview.php') ?>
-                
-                <!-- Searchable Select -->
-                <?php include('inc/sections/searchable-select.php') ?>
-                
-                <!-- Dependable Dropdown -->
-                <?php include('inc/sections/dependable-dropdown.php') ?>
                 
                 <!-- Add/Remove Row -->
                 <?php include('inc/sections/add-remove-row.php') ?>
@@ -616,9 +607,6 @@
                 
                 <!-- Toggle Component -->
                 <?php include('inc/sections/toggle-component.php') ?>
-                
-                <!-- Programming Concepts -->
-                <?php include('inc/sections/programming-concepts.php') ?>
                 
                 <!-- Table Export -->
                 <?php include('inc/sections/table-export.php') ?>
