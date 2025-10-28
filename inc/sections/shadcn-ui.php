@@ -1,310 +1,417 @@
-<section id="service" class="content-section">
+<section id="shadcn-ui" class="content-section">
     <div class="page-header">
         <h1 class="page-title">
-            <i class="bi bi-gear"></i>
-            Service
+            <i class="bi bi-palette"></i>
+            ShadCN UI Components
         </h1>
-        <p class="page-subtitle">Service classes for complex business logic</p>
+        <p class="page-subtitle">Implementing beautiful UI components with ShadCN UI and Tailwind CSS</p>
     </div>
     
     <div class="card">
         <div class="card-header">
-            <i class="bi bi-code-square"></i> Creating Service Classes
+            <i class="bi bi-code-square"></i> ShadCN UI Installation and Setup
         </div>
         <div class="card-body">
             <div class="definition-box">
-                <h6><i class="bi bi-info-circle"></i> What are Service Classes?</h6>
-                <p>Service classes are used to encapsulate complex business logic, keeping controllers thin and promoting code reusability.</p>
+                <h6><i class="bi bi-info-circle"></i> What is ShadCN UI?</h6>
+                <p>ShadCN UI is a collection of reusable components built with Radix UI and Tailwind CSS that you can copy and paste into your apps. It provides accessible, customizable components that follow best practices.</p>
             </div>
             
             <div class="info-callout">
-                <h6><i class="bi bi-lightbulb"></i> When to Use Services</h6>
-                <p>Consider using service classes when you have complex business logic that might be reused across multiple controllers or when your controller methods become too large.</p>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-12">
-                    <h6>Example Service Structure</h6>
-                    <div class="file-path">app/Services/PostService.php</div>
-                    <pre><code>&lt;?php
-
-namespace App\Services;
-
-use App\Models\Post;
-use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Response;
-use Exception;
-
-class PostService
-{
-    /**
-     * Get filtered and sorted posts with error handling
-     */
-    public function getFilteredPosts(array $filters)
-    {
-        try {
-            // Use the model scopes for filtering and sorting
-            $query = Post::filteredAndSorted($filters);
-            
-            // Apply pagination
-            $perPage = $filters['per_page'] ?? 10;
-            return $query->paginate($perPage);
-        } catch (Exception $e) {
-            throw new Exception("Failed to fetch posts: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Create a new post with transaction safety
-     */
-    public function createPost(array $data)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $post = new Post();
-            
-            // Handle file upload if present
-            if (isset($data['image']) && $data['image']) {
-                $path = $data['image']->store('posts', 'public');
-                $post->image_path = $path;
-                unset($data['image']);
-            }
-            
-            $post->fill($data);
-            $post->save();
-            
-            DB::commit();
-            return $post;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to create post: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Update an existing post with transaction safety
-     */
-    public function updatePost(Post $post, array $data)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Handle file upload if present
-            if (isset($data['image']) && $data['image']) {
-                // Delete old file if exists
-                if ($post->image_path) {
-                    Storage::disk('public')->delete($post->image_path);
-                }
-                
-                // Store new file
-                $path = $data['image']->store('posts', 'public');
-                $post->image_path = $path;
-                unset($data['image']);
-            }
-            
-            $post->update($data);
-            
-            DB::commit();
-            return $post;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to update post: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Delete a post with transaction safety
-     */
-    public function deletePost(Post $post)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Delete associated file if exists
-            if ($post->image_path) {
-                Storage::disk('public')->delete($post->image_path);
-            }
-            
-            $result = $post->delete();
-            
-            DB::commit();
-            return $result;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to delete post: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Get a single post with related data
-     */
-    public function getPostWithDetails(Post $post)
-    {
-        try {
-            return $post;
-        } catch (Exception $e) {
-            throw new Exception("Failed to load post details: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Bulk delete posts with transaction safety
-     */
-    public function bulkDeletePosts(array $ids)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Get posts to delete for file cleanup
-            $posts = Post::whereIn('id', $ids)->get();
-            
-            // Delete associated files
-            foreach ($posts as $post) {
-                if ($post->image_path) {
-                    Storage::disk('public')->delete($post->image_path);
-                }
-            }
-            
-            $deletedCount = Post::whereIn('id', $ids)->delete();
-            
-            DB::commit();
-            return $deletedCount;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to bulk delete posts: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Clone a post
-     */
-    public function clonePost(Post $post)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $clonedPost = $post->replicate();
-            $clonedPost->title = $post->title . ' (Copy)';
-            $clonedPost->created_at = now();
-            $clonedPost->updated_at = now();
-            $clonedPost->save();
-            
-            DB::commit();
-            return $clonedPost;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to clone post: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Toggle post published status
-     */
-    public function togglePublished(Post $post)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $post->published = !$post->published;
-            $post->save();
-            
-            DB::commit();
-            return $post;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw new Exception("Failed to toggle post status: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Get post statistics
-     */
-    public function getPostStats()
-    {
-        try {
-            return [
-                'total' => Post::count(),
-                'published' => Post::where('published', true)->count(),
-                'draft' => Post::where('published', false)->count(),
-                'this_month' => Post::whereMonth('created_at', now()->month)->count(),
-            ];
-        } catch (Exception $e) {
-            throw new Exception("Failed to fetch post statistics: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Export posts to CSV
-     */
-    public function exportPosts(array $filters)
-    {
-        try {
-            // Use the model scopes for filtering and sorting
-            $query = Post::filteredAndSorted($filters);
-            $posts = $query->get(); // Get all posts without pagination
-            
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="posts-export.csv"',
-            ];
-
-            $callback = function() use ($posts) {
-                $file = fopen('php://output', 'w');
-                
-                // Add CSV headers
-                fputcsv($file, ['ID', 'Title', 'Content', 'Published', 'Created At', 'Updated At']);
-                
-                // Add data rows
-                foreach ($posts as $post) {
-                    fputcsv($file, [
-                        $post->id,
-                        $post->title,
-                        substr($post->content, 0, 100) . '...', // Truncate content
-                        $post->published ? 'Yes' : 'No',
-                        $post->created_at->format('Y-m-d H:i:s'),
-                        $post->updated_at->format('Y-m-d H:i:s'),
-                    ]);
-                }
-                
-                fclose($file);
-            };
-
-            return Response::stream($callback, 200, $headers);
-        } catch (Exception $e) {
-            throw new Exception("Failed to export posts: " . $e->getMessage());
-        }
-    }
-}
-</code></pre>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="card">
-        <div class="card-header">
-            <i class="bi bi-layout-wtf"></i> Frontend Page Components with ShadCN UI
-        </div>
-        <div class="card-body">
-            <div class="definition-box">
-                <h6><i class="bi bi-info-circle"></i> What are React Resources?</h6>
-                <p>React resources are the frontend components that make up your application's user interface, organized by feature or entity.</p>
-            </div>
-            
-            <div class="info-callout">
-                <h6><i class="bi bi-info-circle"></i> Frontend Component Details</h6>
-                <p><strong>File Path:</strong> <code>resources/js/pages/Posts/Index.jsx</code><br>
-                <strong>Dependencies:</strong> Requires Inertia.js hooks, React state management, and ShadCN UI components</p>
+                <h6><i class="bi bi-lightbulb"></i> ShadCN UI Benefits</h6>
+                <p>
+                    <strong>Accessibility:</strong> Built with Radix UI primitives for full accessibility<br>
+                    <strong>Customizable:</strong> Easily styled with Tailwind CSS classes<br>
+                    <strong>Lightweight:</strong> Copy only what you need<br>
+                    <strong>TypeScript Support:</strong> Full TypeScript support out of the box
+                </p>
             </div>
             
             <div class="alert-pattern">
-                <h6><i class="bi bi-lightning"></i> FOR LISTING WITH ALL FEATURES</h6>
-                <p><strong>File:</strong> <code>resources/js/pages/Posts/Index.jsx</code> - Complete implementation with search, filter, sort, pagination using ShadCN UI</p>
+                <h6><i class="bi bi-lightning"></i> FOR SHADCN UI SETUP</h6>
+                <p><strong>Files:</strong> Installation and configuration steps for ShadCN UI in Laravel + React projects</p>
             </div>
+            
+            <h5>Prerequisites</h5>
+            <p>Before installing ShadCN UI, ensure you have the following dependencies:</p>
+            <pre><code>// Install required dependencies
+npm install tailwindcss postcss autoprefixer
+npm install @radix-ui/react-slot
+npm install class-variance-authority
+npm install clsx tailwind-merge
+npm install lucide-react
+
+// Initialize Tailwind CSS
+npx tailwindcss init -p</code></pre>
+            
+            <h5>Tailwind CSS Configuration</h5>
+            <div class="file-path">tailwind.config.js</div>
+            <pre><code>/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+    './resources/**/*.{ts,tsx,js,jsx}',
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}</code></pre>
+            
+            <h5>CSS Configuration</h5>
+            <div class="file-path">resources/css/app.css</div>
+            <pre><code>@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}</code></pre>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-components"></i> Essential ShadCN UI Components for Laravel Projects
+        </div>
+        <div class="card-body">
+            <div class="definition-box">
+                <h6><i class="bi bi-info-circle"></i> Core Components</h6>
+                <p>These are the essential ShadCN UI components that work well with Laravel + Inertia.js + React projects.</p>
+            </div>
+            
+            <div class="alert-pattern">
+                <h6><i class="bi bi-lightning"></i> FOR CORE COMPONENTS</h6>
+                <p><strong>Files:</strong> Implementation examples for Button, Input, Table, and other core components</p>
+            </div>
+            
+            <h5>Button Component</h5>
+            <div class="file-path">resources/js/components/ui/button.jsx</div>
+            <pre><code>import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva } from "class-variance-authority";
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button"
+  return (
+    (&lt;Comp
+      className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
+      {...props} /&gt;)
+  );
+})
+Button.displayName = "Button"
+
+export { Button, buttonVariants }</code></pre>
+            
+            <h5>Table Component</h5>
+            <div class="file-path">resources/js/components/ui/table.jsx</div>
+            <pre><code>import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Table = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;div className="relative w-full overflow-auto"&gt;
+    &lt;table
+      ref={ref}
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props} /&gt;
+  &lt;/div&gt;
+))
+Table.displayName = "Table"
+
+const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} /&gt;
+))
+TableHeader.displayName = "TableHeader"
+
+const TableBody = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;tbody
+    ref={ref}
+    className={cn("[&_tr:last-child]:border-0", className)}
+    {...props} /&gt;
+))
+TableBody.displayName = "TableBody"
+
+const TableFooter = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;tfoot
+    ref={ref}
+    className={cn("bg-primary font-medium text-primary-foreground", className)}
+    {...props} /&gt;
+))
+TableFooter.displayName = "TableFooter"
+
+const TableRow = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;tr
+    ref={ref}
+    className={cn(
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      className
+    )}
+    {...props} /&gt;
+))
+TableRow.displayName = "TableRow"
+
+const TableHead = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;th
+    ref={ref}
+    className={cn(
+      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      className
+    )}
+    {...props} /&gt;
+))
+TableHead.displayName = "TableHead"
+
+const TableCell = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;td
+    ref={ref}
+    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    {...props} /&gt;
+))
+TableCell.displayName = "TableCell"
+
+const TableCaption = React.forwardRef(({ className, ...props }, ref) => (
+  &lt;caption
+    ref={ref}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    {...props} /&gt;
+))
+TableCaption.displayName = "TableCaption"
+
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+}</code></pre>
+            
+            <h5>Input Component</h5>
+            <div class="file-path">resources/js/components/ui/input.jsx</div>
+            <pre><code>import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Input = React.forwardRef(({ className, type, ...props }, ref) => {
+  return (
+    (&lt;input
+      type={type}
+      className={cn(
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      ref={ref}
+      {...props} /&gt;)
+  )
+})
+Input.displayName = "Input"
+
+export { Input }</code></pre>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-layout-wtf"></i> ShadCN UI Integration with Laravel + Inertia.js
+        </div>
+        <div class="card-body">
+            <div class="definition-box">
+                <h6><i class="bi bi-info-circle"></i> Integration Patterns</h6>
+                <p>Best practices for integrating ShadCN UI components with Laravel backend and Inertia.js frontend.</p>
+            </div>
+            
+            <div class="info-callout">
+                <h6><i class="bi bi-lightbulb"></i> Integration Best Practices</h6>
+                <p>
+                    <strong>Data Flow:</strong> Use Inertia's page props to pass data to components<br>
+                    <strong>State Management:</strong> Leverage React's useState and Inertia's router for state<br>
+                    <strong>Error Handling:</strong> Display validation errors using ShadCN UI components<br>
+                    <strong>Responsive Design:</strong> Use Tailwind's responsive classes with ShadCN UI
+                </p>
+            </div>
+            
+            <div class="alert-pattern">
+                <h6><i class="bi bi-lightning"></i> FOR INTEGRATION PATTERNS</h6>
+                <p><strong>Files:</strong> Examples of integrating ShadCN UI with Laravel controllers and Inertia.js</p>
+            </div>
+            
+            <h5>Posts Index Page with ShadCN UI</h5>
+            <div class="file-path">resources/js/pages/Posts/Index.jsx</div>
             <pre><code>import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";

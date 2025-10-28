@@ -570,7 +570,10 @@
                 <?php include('inc/sections/routes.php') ?>  
                 
                 <!-- Resources -->
-                <?php include('inc/sections/resources.php') ?>        
+                <?php include('inc/sections/resources.php') ?>   
+                
+                <!-- ShadCN UI -->
+                <?php include('inc/sections/shadcn-ui.php') ?>     
                 
                 <!-- CRUD Operations -->
                 <?php include('inc/sections/crud-operation.php') ?>
@@ -598,6 +601,30 @@
                 
                 <!-- Modal View -->
                 <?php include('inc/sections/modalview.php') ?>
+                
+                <!-- Searchable Select -->
+                <?php include('inc/sections/searchable-select.php') ?>
+                
+                <!-- Dependable Dropdown -->
+                <?php include('inc/sections/dependable-dropdown.php') ?>
+                
+                <!-- Add/Remove Row -->
+                <?php include('inc/sections/add-remove-row.php') ?>
+                
+                <!-- Price Calculation -->
+                <?php include('inc/sections/price-calculation.php') ?>
+                
+                <!-- Toggle Component -->
+                <?php include('inc/sections/toggle-component.php') ?>
+                
+                <!-- Programming Concepts -->
+                <?php include('inc/sections/programming-concepts.php') ?>
+                
+                <!-- Table Export -->
+                <?php include('inc/sections/table-export.php') ?>
+                
+                <!-- Custom Layouts -->
+                <?php include('inc/sections/custom-layouts.php') ?>
                 
                 <!-- Quick Reference -->
                 <?php include('inc/sections/quick-reference.php') ?>

@@ -80,6 +80,12 @@
                     Resources
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#shadcn-ui">
+                    <i class="bi bi-palette"></i>
+                    ShadCN UI
+                </a>
+            </li>
         </ul>
     </div>
     
@@ -138,6 +144,66 @@
                 <a class="nav-link" href="#modalview">
                     <i class="bi bi-window"></i>
                     Modal View
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="sidebar-section">
+        <div class="sidebar-heading">UI Components</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#searchable-select">
+                    <i class="bi bi-menu-button-wide"></i>
+                    Searchable Select
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#dependable-dropdown">
+                    <i class="bi bi-diagram-3"></i>
+                    Dependable Dropdown
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#add-remove-row">
+                    <i class="bi bi-plus-square"></i>
+                    Add/Remove Row
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#price-calculation">
+                    <i class="bi bi-calculator"></i>
+                    Price Calculation
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#toggle-component">
+                    <i class="bi bi-toggle-on"></i>
+                    Toggle Switch
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="sidebar-section">
+        <div class="sidebar-heading">Learning Resources</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#programming-concepts">
+                    <i class="bi bi-code-square"></i>
+                    Programming Concepts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#table-export">
+                    <i class="bi bi-file-earmark-arrow-down"></i>
+                    Table Export
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#custom-layouts">
+                    <i class="bi bi-layout-sidebar"></i>
+                    Custom Layouts
                 </a>
             </li>
         </ul>
