@@ -495,7 +495,7 @@ pre code {
     border-left: 4px solid var(--success);
     padding: 1rem;
     border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    margin: 1rem 0;
+    margin-bottom: 1rem;
 }
 
 .definition-box h6 {
