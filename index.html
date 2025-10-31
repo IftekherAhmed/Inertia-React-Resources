@@ -59,7 +59,7 @@
       color: var(--primary);
       border-bottom: 2px solid var(--primary);
       padding-bottom: 8px;
-      margin: 50px 0 25px;
+      margin: 10px 0 25px;
     }
 
     .card {
@@ -116,7 +116,7 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       position: sticky;
-      top: 90px;
+      top: 10px;
       font-size: 0.9rem;
     }
     .toc a {
@@ -127,13 +127,43 @@
       border-radius: 5px;
     }
     .toc a:hover { background: #ebf8ff; color: var(--primary); padding-left: 6px; }
+    .toc a.active { 
+      background: #ebf8ff; 
+      color: var(--primary); 
+      font-weight: 600; 
+      border-left: 3px solid var(--primary);
+      padding-left: 3px;
+    }
+
+    /* Scroll to Top Button */
+    #scrollToTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 30px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background-color: var(--primary);
+      color: white;
+      cursor: pointer;
+      padding: 15px;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    #scrollToTopBtn:hover {
+      background-color: #334fce;
+    }
 
     .badge { font-size: 0.8rem; padding: 5px 10px; }
 
     .footer {
       background: #2d3436;
       color: #b2bec3;
-      padding: 40px 0;
+      padding: 10px 0;
       margin-top: 80px;
       font-size: 0.9rem;
     }
@@ -155,30 +185,6 @@
   </style>
 </head>
 <body>
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="#">Laravel + Inertia + React</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#crud">CRUD</a></li>
-          <li class="nav-item"><a class="nav-link" href="#search">Search</a></li>
-          <li class="nav-item"><a class="nav-link" href="#sort">Sort</a></li>
-          <li class="nav-item"><a class="nav-link" href="#filter">Filter</a></li>
-          <li class="nav-item"><a class="nav-link" href="#pagination">Pagination</a></li>
-          <li class="nav-item"><a class="nav-link" href="#reset">Reset</a></li>
-          <li class="nav-item"><a class="nav-link" href="#export">Export</a></li>
-          <li class="nav-item"><a class="nav-link" href="#advanced">Advanced</a></li>
-          <li class="nav-item"><a class="nav-link" href="#layout">Layouts</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
   <!-- Hero -->
   <section class="hero">
     <div class="container">
@@ -208,8 +214,12 @@
             <li><a href="#pagination">5. Add Pagination</a></li>
             <li><a href="#reset">6. Add Reset</a></li>
             <li><a href="#export">7. Table Export</a></li>
-            <li><a href="#advanced">8. Advanced Features</a></li>
-            <li><a href="#layout">9. Custom Layouts</a></li>
+            <li><a href="#hooks">8. Inertia React JS Basic Functions</a></li>
+            <li><a href="#rows">9. Add/Remove Row</a></li>
+            <li><a href="#price">10. Price Calculation</a></li>
+            <li><a href="#toggler">11. Toggler</a></li>
+            <li><a href="#advanced">12. Advanced Features</a></li>
+            <li><a href="#layout">13. Custom Layouts</a></li>
           </ul>
         </div>
       </div>
@@ -380,39 +390,25 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Services\PostService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller {
+    protected $postService;
+
+    public function __construct(PostService $postService) {
+        $this->postService = $postService;
+    }
+
     public function index(Request $request) {
-        $search = $request->input('search');
-        $sortBy = $request->input('sort_by', 'id');
-        $sortDirection = $request->input('sort_direction', 'asc');
-        $published = $request->input('published');
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-        
-        // Create cache key based on filters
-        $cacheKey = "posts_{$search}_{$sortBy}_{$sortDirection}_{$published}_{$perPage}_{$page}";
-        
-        $posts = Cache::remember($cacheKey, 300, function() use ($search, $sortBy, $sortDirection, $published, $perPage, $page) {
-            return Post::search($search)
-                ->published($published)
-                ->sortBy($sortBy, $sortDirection)
-                ->paginateResults($perPage, $page);
-        });
+        $result = $this->postService->getPostList($request);
         
         return Inertia::render('Post/Index', [
-            'posts' => $posts,
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_direction' => $sortDirection,
-                'published' => $published,
-                'per_page' => $perPage,
-            ],
+            'posts' => $result['posts'],
+            'filters' => $result['filters'],
         ]);
     }
     
@@ -429,7 +425,7 @@ class PostController extends Controller {
                 $data['image'] = $request->file('image')->store('posts', 'public');
             }
             
-            $post = Post::create($data);
+            $post = $this->postService->createPost($data);
             
             // Clear cache
             Cache::flush();
@@ -442,6 +438,11 @@ class PostController extends Controller {
     
     public function edit(Post $post) { 
         return Inertia::render('Post/Edit', ['post' => $post]); 
+    }
+    
+    public function show(Post $post) { 
+        $post = $this->postService->getPostById($post->id);
+        return Inertia::render('Post/Show', ['post' => $post]); 
     }
     
     public function update(UpdatePostRequest $request, Post $post) {
@@ -458,7 +459,7 @@ class PostController extends Controller {
                 $data['image'] = $request->file('image')->store('posts', 'public');
             }
             
-            $post->update($data);
+            $post = $this->postService->updatePost($post, $data);
             
             // Clear cache
             Cache::flush();
@@ -471,7 +472,7 @@ class PostController extends Controller {
     
     public function destroy(Post $post) {
         try {
-            $post->delete();
+            $this->postService->deletePost($post);
             
             // Clear cache
             Cache::flush();
@@ -515,6 +516,7 @@ class PostController extends Controller {
             return back()->with('error', 'Failed to permanently delete post: ' . $e->getMessage());
         }
     }
+}
 }</code></pre>
             </div>
           </div>
@@ -548,48 +550,15 @@ class StorePostRequest extends FormRequest {
             'image.max' => 'The image must not be larger than 2MB',
         ];
     }
-}</code></pre>
-              
-              <div class="file-path">app/Http/Requests/UpdatePostRequest.php</div>
-              <pre><code class="language-php">&lt;?php
-namespace App\Http\Requests;
+}
 
-use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePostRequest extends FormRequest {
-    public function rules(): array {
-        return [
-            'title' => 'sometimes|required|string|max:255|unique:posts,title,' . $this->post->id,
-            'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_published' => 'boolean',
-        ];
-    }
-    
-    public function messages(): array {
-        return [
-            'title.required' => 'A title is required',
-            'title.unique' => 'This title has already been taken',
-            'description.max' => 'Description must not exceed 1000 characters',
-            'image.image' => 'The file must be an image',
-            'image.max' => 'The image must not be larger than 2MB',
-        ];
-    }
-}</code></pre>
-            </div>
-          </div>
-
-          <!-- 8. Service (Optional) -->
-          <div class="card">
-            <div class="card-header">1.8 Service Class</div>
-            <div class="card-body">
-              <div class="command">mkdir -p app/Services</div>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">&lt;?php
+&lt;?php
 namespace App\Services;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PostService {
     public function getPostList(Request $request) {
@@ -604,12 +573,16 @@ class PostService {
         $page = $request->input('page', 1);
         $perPage = $filters['per_page'];
 
-        // Use model scopes for cleaner query building
-        $query = Post::search($filters['search'] ?? null)
-            ->published($filters['published'] ?? null)
-            ->sortBy($filters['sort_by'] ?? 'id', $filters['sort_direction'] ?? 'asc');
-            
-        $results = $query->paginateResults($perPage, $page);
+        // Create cache key based on filters
+        $cacheKey = "posts_{$filters['search']}_{$filters['sort_by']}_{$filters['sort_direction']}_{$filters['published']}_{$perPage}_{$page}";
+        
+        $results = Cache::remember($cacheKey, 300, function() use ($filters, $perPage, $page) {
+            // Use model scopes for cleaner query building
+            return Post::search($filters['search'] ?? null)
+                ->published($filters['published'] ?? null)
+                ->sortBy($filters['sort_by'] ?? 'id', $filters['sort_direction'] ?? 'asc')
+                ->paginateResults($perPage, $page);
+        });
 
         return [
             'posts' => $results,
@@ -642,42 +615,16 @@ class PostService {
             throw new \Exception('Failed to delete post: ' . $exception->getMessage());
         }
     }
-}</code></pre>
-            </div>
-          </div>
-
-          <!-- 9. TSX Pages -->
-          <div class="card">
-            <div class="card-header">1.9 TSX Pages</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
-              <pre><code class="language-tsx">import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Pencil, Plus, Trash2, ArrowUp, ArrowDown, RotateCcw, Download } from 'lucide-react';
-import { useState, useRef } from 'react';
-import { useDownloadExcel } from 'react-export-table-to-excel';
-
-interface Post {
-  id: number;
-  title: string;
-  description: string | null;
-  image: string | null;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
+    
+    public function getPostById($id) {
+        try {
+            return Post::findOrFail($id);
+        } catch (\Exception $exception) {
+            throw new \Exception('Post not found: ' . $exception->getMessage());
+        }
+    }
 }
 
-interface Pagination {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-  from: number;
-  to: number;
   links: {
     url: string | null;
     label: string;
@@ -940,6 +887,11 @@ export default function Index({ posts, filters }: IndexProps) {
                     &lt;/td>
                     &lt;td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       &lt;div className="flex justify-end space-x-2">
+                        &lt;Button variant="outline" size="sm" asChild>
+                          &lt;Link href={route('post.show', post.id)}>
+                            &lt;Eye className="h-4 w-4" />
+                          &lt;/Link>
+                        &lt;/Button>
                         &lt;Button variant="outline" size="sm" asChild>
                           &lt;Link href={route('post.edit', post.id)}>
                             &lt;Pencil className="h-4 w-4" />
@@ -1286,6 +1238,100 @@ export default function Edit({ post, errors }: EditProps) {
             </div>
           </div>
 
+          <!-- Show Page -->
+          <div class="card">
+            <div class="card-header">1.12 Show Page</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Show.tsx</div>
+              <pre><code class="language-tsx">import { Head, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface Post {
+  id: number;
+  title: string;
+  description: string | null;
+  image: string | null;
+  image_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ShowProps {
+  post: Post;
+}
+
+export default function Show({ post }: ShowProps) {
+  return (
+    &lt;AppLayout>
+      &lt;Head title="View Post" />
+      
+      &lt;div className="flex justify-between items-center mb-6">
+        &lt;h1 className="text-2xl font-bold">View Post&lt;/h1>
+        &lt;div className="space-x-2">
+          &lt;Button variant="outline" asChild>
+            &lt;Link href={route('post.index')}>Back to Posts&lt;/Link>
+          &lt;/Button>
+          &lt;Button variant="outline" asChild>
+            &lt;Link href={route('post.edit', post.id)}>Edit Post&lt;/Link>
+          &lt;/Button>
+        &lt;/div>
+      &lt;/div>
+
+      &lt;Card>
+        &lt;CardHeader>
+          &lt;CardTitle>{post.title}&lt;/CardTitle>
+        &lt;/CardHeader>
+        &lt;CardContent>
+          &lt;div className="space-y-4">
+            &lt;div>
+              &lt;h3 className="text-lg font-semibold mb-2">Description&lt;/h3>
+              &lt;p className="text-gray-700">{post.description || 'No description provided.'}&lt;/p>
+            &lt;/div>
+            
+            {post.image_url && (
+              &lt;div>
+                &lt;h3 className="text-lg font-semibold mb-2">Image&lt;/h3>
+                &lt;img 
+                  src={post.image_url} 
+                  alt={post.title} 
+                  className="max-w-full h-auto rounded"
+                />
+              &lt;/div>
+            )}
+            
+            &lt;div className="flex items-center">
+              &lt;h3 className="text-lg font-semibold mr-2">Status:&lt;/h3>
+              &lt;span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                post.is_published 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {post.is_published ? 'Published' : 'Draft'}
+              &lt;/span>
+            &lt;/div>
+            
+            &lt;div className="grid grid-cols-2 gap-4">
+              &lt;div>
+                &lt;h3 className="text-lg font-semibold">Created At&lt;/h3>
+                &lt;p className="text-gray-700">{new Date(post.created_at).toLocaleString()}&lt;/p>
+              &lt;/div>
+              &lt;div>
+                &lt;h3 className="text-lg font-semibold">Last Updated&lt;/h3>
+                &lt;p className="text-gray-700">{new Date(post.updated_at).toLocaleString()}&lt;/p>
+              &lt;/div>
+            &lt;/div>
+          &lt;/div>
+        &lt;/CardContent>
+      &lt;/Card>
+    &lt;/AppLayout>
+  );
+}</code></pre>
+            </div>
+          </div>
+
           <!-- 10. Routes -->
           <div class="card">
             <div class="card-header">1.12 Routes</div>
@@ -1297,7 +1343,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::resource('post', PostController::class);
 Route::post('/post/{id}/restore', [PostController::class, 'restore'])->name('post.restore');
-Route::delete('/post/{id}/force-delete', [PostController::class, 'forceDelete'])->name('post.force-delete');</code></pre>
+Route::delete('/post/{id}/force-delete', [PostController::class, 'forceDelete'])->name('post.force-delete');
+
+// This will generate the following routes:
+// GET    /post                 post.index
+// GET    /post/create          post.create
+// POST   /post                 post.store
+// GET    /post/{post}          post.show
+// GET    /post/{post}/edit     post.edit
+// PUT    /post/{post}          post.update
+// DELETE /post/{post}          post.destroy</code></pre>
             </div>
           </div>
         </section>
@@ -1492,7 +1547,7 @@ const handleSort = (column: string) => {
           </div>
         </section>
 
-        <!-- 5. ADD PAGINATION -->
+        <!-- 12. Advanced Features -->
         <section id="pagination" class="section-header">
           <h2>5. To Add Pagination (Server + Frontend)</h2>
 
@@ -1666,9 +1721,427 @@ const { onDownload } = useDownloadExcel({
           </div>
         </section>
 
-        <!-- 8. ADVANCED FEATURES -->
+        <!-- 8. INERTIA REACT JS BASIC FUNCTIONS -->
+        <section id="hooks" class="section-header">
+          <h2>8. Inertia React JS Basic Functions</h2>
+
+          <!-- Hooks -->
+          <div class="card">
+            <div class="card-header">Basic Hooks</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { usePage, router } from '@inertiajs/react';
+
+// useState - Manage local component state
+const [searchQuery, setSearchQuery] = useState('');
+
+// useEffect - Handle side effects
+useEffect(() => {
+  // Run after component mounts
+  console.log('Component mounted');
+  
+  // Cleanup function (runs before next effect or unmount)
+  return () => {
+    console.log('Component will unmount');
+  };
+}, []); // Empty dependency array = run once
+
+// useRef - Access DOM elements or store mutable values
+const inputRef = useRef(null);
+const focusInput = () => inputRef.current?.focus();
+
+// useMemo - Memoize expensive calculations
+const filteredPosts = useMemo(() => {
+  return posts.filter(post => 
+    post.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+}, [posts, searchQuery]);
+
+// useCallback - Memoize functions to prevent unnecessary re-renders
+const handleDelete = useCallback((id) => {
+  if (confirm('Are you sure?')) {
+    router.delete(route('post.destroy', id));
+  }
+}, []);</code></pre>
+            </div>
+          </div>
+
+          <!-- Trigger Events -->
+          <div class="card">
+            <div class="card-header">Trigger Events</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Using router for navigation and data operations
+import { router } from '@inertiajs/react';
+
+// GET request with parameters
+const handleSearch = () => {
+  router.get(route('post.index'), {
+    search: searchQuery,
+    page: 1
+  });
+};
+
+// POST request with data
+const handleCreate = (data) => {
+  router.post(route('post.store'), data);
+};
+
+// PUT request for updates
+const handleUpdate = (id, data) => {
+  router.put(route('post.update', id), data);
+};
+
+// DELETE request
+const handleDelete = (id) => {
+  router.delete(route('post.destroy', id));
+};
+
+// Reload current page
+const handleReload = () => {
+  router.reload();
+};
+
+// Visit a different URL
+const handleVisit = () => {
+  router.visit('/dashboard');
+};
+
+// Replace current history entry
+const handleReplace = () => {
+  router.replace('/new-page');
+};</code></pre>
+            </div>
+          </div>
+
+          <!-- Event Handling -->
+          <div class="card">
+            <div class="card-header">Event Handling Examples</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Form submission
+const handleSubmit = (e) => {
+  e.preventDefault();
+  // Handle form data
+};
+
+// Input change handling
+const handleInputChange = (e) => {
+  setData(e.target.name, e.target.value);
+};
+
+// Button click with parameters
+const handleEditClick = (id) => (e) => {
+  e.preventDefault();
+  router.get(route('post.edit', id));
+};
+
+// Keyboard events
+const handleKeyPress = (e) => {
+  if (e.key === 'Enter') {
+    handleSearch();
+  }
+};
+
+// In render method:
+&lt;form onSubmit={handleSubmit}>
+  &lt;input 
+    name="title"
+    value={data.title}
+    onChange={handleInputChange}
+    onKeyPress={handleKeyPress}
+  />
+  &lt;button type="submit">Submit&lt;/button>
+  &lt;button onClick={handleEditClick(post.id)}>Edit&lt;/button>
+&lt;/form></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. ADD/REMOVE ROW -->
+        <section id="rows" class="section-header">
+          <h2>9. Add/Remove Row</h2>
+
+          <!-- State Management -->
+          <div class="card">
+            <div class="card-header">Dynamic Row Management</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+              <pre><code class="language-tsx">import { useState } from 'react';
+
+// For a form with dynamic rows (e.g., product variants, order items)
+const [rows, setRows] = useState([
+  { id: 1, name: '', price: 0, quantity: 1 }
+]);
+
+// Add new row
+const addRow = () => {
+  setRows([
+    ...rows,
+    { id: Date.now(), name: '', price: 0, quantity: 1 }
+  ]);
+};
+
+// Remove row by index
+const removeRow = (index) => {
+  setRows(rows.filter((_, i) => i !== index));
+};
+
+// Update specific row field
+const updateRow = (index, field, value) => {
+  const updatedRows = [...rows];
+  updatedRows[index] = { ...updatedRows[index], [field]: value };
+  setRows(updatedRows);
+};
+
+// In render method:
+{rows.map((row, index) => (
+  &lt;div key={row.id} className="row mb-3">
+    &lt;div className="col-md-4">
+      &lt;input
+        type="text"
+        value={row.name}
+        onChange={(e) => updateRow(index, 'name', e.target.value)}
+        placeholder="Name"
+      />
+    &lt;/div>
+    &lt;div className="col-md-3">
+      &lt;input
+        type="number"
+        value={row.price}
+        onChange={(e) => updateRow(index, 'price', parseFloat(e.target.value) || 0)}
+        placeholder="Price"
+      />
+    &lt;/div>
+    &lt;div className="col-md-3">
+      &lt;input
+        type="number"
+        value={row.quantity}
+        onChange={(e) => updateRow(index, 'quantity', parseInt(e.target.value) || 1)}
+        placeholder="Quantity"
+      />
+    &lt;/div>
+    &lt;div className="col-md-2">
+      &lt;button 
+        type="button" 
+        onClick={() => removeRow(index)}
+        className="btn btn-danger"
+      >
+        Remove
+      &lt;/button>
+    &lt;/div>
+  &lt;/div>
+))}
+
+&lt;button type="button" onClick={addRow} className="btn btn-secondary">
+  Add Row
+&lt;/button></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. PRICE CALCULATION -->
+        <section id="price" class="section-header">
+          <h2>10. Price Calculation</h2>
+
+          <!-- Basic Calculation -->
+          <div class="card">
+            <div class="card-header">Dynamic Price Calculation</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Order/Create.tsx</div>
+              <pre><code class="language-tsx">import { useState, useMemo } from 'react';
+
+const [items, setItems] = useState([
+  { id: 1, name: 'Product 1', price: 100, quantity: 1, discount: 0 }
+]);
+
+const [taxRate, setTaxRate] = useState(0.1); // 10%
+const [shippingCost, setShippingCost] = useState(10);
+
+// Calculate subtotal
+const subtotal = useMemo(() => {
+  return items.reduce((sum, item) => {
+    const itemTotal = item.price * item.quantity;
+    const discountAmount = itemTotal * (item.discount / 100);
+    return sum + (itemTotal - discountAmount);
+  }, 0);
+}, [items]);
+
+// Calculate tax
+const taxAmount = useMemo(() => {
+  return subtotal * taxRate;
+}, [subtotal, taxRate]);
+
+// Calculate total
+const total = useMemo(() => {
+  return subtotal + taxAmount + shippingCost;
+}, [subtotal, taxAmount, shippingCost]);
+
+// Update item quantity
+const updateQuantity = (index, quantity) => {
+  const updatedItems = [...items];
+  updatedItems[index].quantity = quantity;
+  setItems(updatedItems);
+};
+
+// Update item discount
+const updateDiscount = (index, discount) => {
+  const updatedItems = [...items];
+  updatedItems[index].discount = discount;
+  setItems(updatedItems);
+};
+
+// In render method:
+&lt;div className="row">
+  &lt;div className="col-md-8">
+    {items.map((item, index) => (
+      &lt;div key={item.id} className="card mb-3">
+        &lt;div className="card-body">
+          &lt;h5>{item.name}&lt;/h5>
+          &lt;div className="d-flex align-items-center">
+            &lt;input
+              type="number"
+              value={item.quantity}
+              onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 0)}
+              className="form-control me-2"
+              style={{width: '80px'}}
+            />
+            &lt;span className="me-2">x ${item.price}&lt;/span>
+            &lt;input
+              type="number"
+              value={item.discount}
+              onChange={(e) => updateDiscount(index, parseFloat(e.target.value) || 0)}
+              className="form-control me-2"
+              style={{width: '80px'}}
+              placeholder="Discount %"
+            />
+            &lt;span>= ${(item.price * item.quantity * (1 - item.discount/100)).toFixed(2)}&lt;/span>
+          &lt;/div>
+        &lt;/div>
+      &lt;/div>
+    ))}
+  &lt;/div>
+  &lt;div className="col-md-4">
+    &lt;div className="card">
+      &lt;div className="card-body">
+        &lt;h5>Order Summary&lt;/h5>
+        &lt;div className="d-flex justify-content-between">
+          &lt;span>Subtotal:&lt;/span>
+          &lt;span>${subtotal.toFixed(2)}&lt;/span>
+        &lt;/div>
+        &lt;div className="d-flex justify-content-between">
+          &lt;span>Tax ({taxRate * 100}%):&lt;/span>
+          &lt;span>${taxAmount.toFixed(2)}&lt;/span>
+        &lt;/div>
+        &lt;div className="d-flex justify-content-between">
+          &lt;span>Shipping:&lt;/span>
+          &lt;span>${shippingCost.toFixed(2)}&lt;/span>
+        &lt;/div>
+        &lt;hr/>
+        &lt;div className="d-flex justify-content-between fw-bold">
+          &lt;span>Total:&lt;/span>
+          &lt;span>${total.toFixed(2)}&lt;/span>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  &lt;/div>
+&lt;/div></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. TOGGLER -->
+        <section id="toggler" class="section-header">
+          <h2>11. Toggler</h2>
+
+          <!-- Toggle Components -->
+          <div class="card">
+            <div class="card-header">Toggle Visibility & State</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">import { useState } from 'react';
+
+// Simple boolean toggle
+const [isVisible, setIsVisible] = useState(false);
+const toggleVisibility = () => setIsVisible(!isVisible);
+
+// Toggle between multiple states
+const [viewMode, setViewMode] = useState('list'); // 'list', 'grid', 'table'
+const toggleViewMode = () => {
+  setViewMode(viewMode === 'list' ? 'grid' : viewMode === 'grid' ? 'table' : 'list');
+};
+
+// Toggle array items (e.g., selected items)
+const [selectedItems, setSelectedItems] = useState([]);
+const toggleItemSelection = (itemId) => {
+  setSelectedItems(prev => 
+    prev.includes(itemId) 
+      ? prev.filter(id => id !== itemId) 
+      : [...prev, itemId]
+  );
+};
+
+// Toggle object properties
+const [filters, setFilters] = useState({
+  showPublished: true,
+  showDraft: true,
+  showArchived: false
+});
+
+const toggleFilter = (filterName) => {
+  setFilters(prev => ({
+    ...prev,
+    [filterName]: !prev[filterName]
+  }));
+};
+
+// In render method:
+&lt;div>
+  &lt;button onClick={toggleVisibility} className="btn btn-primary">
+    {isVisible ? 'Hide' : 'Show'} Content
+  &lt;/button>
+  
+  {isVisible && (
+    &lt;div className="mt-3">
+      &lt;p>This content can be toggled on/off&lt;/p>
+    &lt;/div>
+  )}
+  
+  &lt;div className="mt-3">
+    &lt;button 
+      onClick={() => toggleFilter('showPublished')} 
+      className={`btn ${filters.showPublished ? 'btn-success' : 'btn-outline-secondary'}`}
+    >
+      Published
+    &lt;/button>
+    &lt;button 
+      onClick={() => toggleFilter('showDraft')} 
+      className={`btn ${filters.showDraft ? 'btn-warning' : 'btn-outline-secondary'}`}
+    >
+      Draft
+    &lt;/button>
+  &lt;/div>
+  
+  &lt;div className="mt-3">
+    &lt;button onClick={toggleViewMode} className="btn btn-secondary">
+      Switch to {viewMode === 'list' ? 'Grid' : viewMode === 'grid' ? 'Table' : 'List'} View
+    &lt;/button>
+  &lt;/div>
+&lt;/div></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ADD SEARCH -->
+        <section id="search" class="section-header">
+          <h2>2. Add Search</h2>
+
+        </section>
+
+        <!-- 12. Advanced Features -->
         <section id="advanced" class="section-header">
-          <h2>8. Advanced Features</h2>
+          <h2>12. Advanced Features</h2>
 
           <!-- File Upload -->
           <div class="card">
@@ -1762,9 +2235,9 @@ public function index(Request $request) {
           </div>
         </section>
 
-        <!-- 9. CUSTOM LAYOUTS -->
+        <!-- 13. Custom Layouts -->
         <section id="layout" class="section-header">
-          <h2>9. Custom Layouts</h2>
+          <h2>13. Custom Layouts</h2>
 
           <!-- Auth Layout -->
           <div class="card">
@@ -1788,43 +2261,91 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 }</code></pre>
             </div>
           </div>
-
-          <!-- App Layout -->
-          <div class="card">
-            <div class="card-header">Application Layout</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/layouts/AppLayout.tsx</div>
-              <pre><code class="language-tsx">import { ReactNode } from 'react';
-import { Head } from '@inertiajs/react';
-
-interface AppLayoutProps {
-  title?: string;
-  children: ReactNode;
-}
-
-export default function AppLayout({ title, children }: AppLayoutProps) {
-  return (
-    &lt;div className="min-h-screen bg-gray-100">
-      {title && &lt;Head title={title} />}
-      &lt;nav className="bg-white border-b border-gray-100">
-        &lt;!-- Navigation content -->
-      &lt;/nav>
-      &lt;main>{children}&lt;/main>
-    &lt;/div>
-  );
-}</code></pre>
-            </div>
-          </div>
         </section>
 
-      </div>
-    </div>
-  </div>
+<!-- Scroll to Top Button -->
+<div class="scroll-top-container">
+  <button id="scrollToTopBtn" title="Go to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"></path>
+    </svg>
+  </button>
+</div>
 
-  <footer class="footer">
-    <div class="container text-center">
-      <p>&copy; 2025 Laravel + Inertia + React | Production-Ready CRUD System</p>
-    </div>
-  </footer>
+<script>
+  // Active sidebar navigation based on scroll position
+  document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.toc a');
+    const headerOffset = 100;
+    
+    function setActiveLink() {
+      let current = '';
+      
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (window.scrollY >= (sectionTop - headerOffset)) {
+          current = section.getAttribute('id');
+        }
+      });
+      
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    }
+    
+    // Set active link on scroll
+    window.addEventListener('scroll', setActiveLink);
+    
+    // Set active link on page load
+    setActiveLink();
+    
+    // Smooth scrolling for anchor links
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetSection = document.querySelector(targetId);
+        
+        if (targetSection) {
+          window.scrollTo({
+            top: targetSection.offsetTop - headerOffset,
+            behavior: 'smooth'
+          });
+          
+          // Update active link immediately
+          navLinks.forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        }
+      });
+    });
+    
+    // Scroll to top button functionality
+    const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        scrollToTopBtn.style.display = "block";
+      } else {
+        scrollToTopBtn.style.display = "none";
+      }
+    });
+    
+    // Scroll to top when button is clicked
+    scrollToTopBtn.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // Hide scroll to top button initially
+    scrollToTopBtn.style.display = "none";
+  });
+</script>
 </body>
 </html>
