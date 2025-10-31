@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laravel 12 + Inertia.js 2 + React 19 + TypeScript | Full CRUD Guide</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Prism.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+  <!-- Font: Inter (clean, standard, professional) -->
+  <link href="https://rsms.me/inter/inter.css" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --primary: #4361ee;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --dark: #2d3436;
+      --light: #f8f9fa;
+      --gray: #95a5a6;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #2d3436;
+      background: #f4f6f9;
+    }
+
+    .navbar {
+      background: var(--primary);
+      font-weight: 500;
+    }
+    .navbar-brand, .nav-link { color: white !important; }
+
+    .hero {
+      background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+      color: white;
+      padding: 70px 0;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.2rem; font-weight: 700; }
+    .hero p { font-size: 1rem; max-width: 700px; margin: 15px auto 0; }
+
+    .container { max-width: 1200px; }
+
+    .section-header {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+      margin: 50px 0 25px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+    }
+    .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: 10px 10px 0 0 !important;
+    }
+
+    .command {
+      background: #2d3436;
+      color: #00ff88;
+      font-family: 'Fira Code', monospace;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin: 12px 0;
+      border-left: 4px solid #00ff88;
+    }
+
+    .file-path {
+      background: #e9ecef;
+      color: #495057;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-block;
+      margin: 10px 0 5px;
+    }
+
+    pre {
+      background: #2d3436 !important;
+      color: #dfe6e9 !important;
+      padding: 16px !important;
+      border-radius: 8px !important;
+      font-size: 0.88rem !important;
+      margin: 10px 0 !important;
+      overflow-x: auto;
+    }
+
+    .toc {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 90px;
+      font-size: 0.9rem;
+    }
+    .toc a {
+      color: #495057;
+      text-decoration: none;
+      display: block;
+      padding: 5px 0;
+      border-radius: 5px;
+    }
+    .toc a:hover { background: #ebf8ff; color: var(--primary); padding-left: 6px; }
+
+    .badge { font-size: 0.8rem; padding: 5px 10px; }
+
+    .footer {
+      background: #2d3436;
+      color: #b2bec3;
+      padding: 40px 0;
+      margin-top: 80px;
+      font-size: 0.9rem;
+    }
+
+    .alert {
+      font-size: 0.9rem;
+      border-left: 4px solid;
+      padding: 12px;
+      margin: 15px 0;
+    }
+    .alert-primary { border-color: var(--primary); background: #ebf8ff; }
+    .alert-success { border-color: var(--success); background: #d1f2eb; }
+    .alert-warning { border-color: var(--warning); background: #fef5e7; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8rem; }
+      .toc { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">Laravel + Inertia + React</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#crud">CRUD</a></li>
+          <li class="nav-item"><a class="nav-link" href="#search">Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="#sort">Sort</a></li>
+          <li class="nav-item"><a class="nav-link" href="#filter">Filter</a></li>
+          <li class="nav-item"><a class="nav-link" href="#pagination">Pagination</a></li>
+          <li class="nav-item"><a class="nav-link" href="#reset">Reset</a></li>
+          <li class="nav-item"><a class="nav-link" href="#export">Export</a></li>
+          <li class="nav-item"><a class="nav-link" href="#advanced">Advanced</a></li>
+          <li class="nav-item"><a class="nav-link" href="#layout">Layouts</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Complete Laravel 12 + Inertia.js 2 + React 19 Guide</h1>
+      <p>Full CRUD, Search, Sort, Filter, Pagination, File Upload, Dynamic Fields, Export, Custom Layouts & More</p>
+      <div class="mt-3">
+        <span class="badge bg-light text-dark">Laravel 12</span>
+        <span class="badge bg-light text-dark">Inertia.js 2</span>
+        <span class="badge bg-light text-dark">React 19</span>
+        <span class="badge bg-light text-dark">TypeScript</span>
+        <span class="badge bg-light text-dark">Tailwind + ShadCN</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="container my-5">
+    <div class="row">
+      <!-- TOC -->
+      <div class="col-lg-3">
+        <div class="toc">
+          <h6 class="fw-bold text-primary">Table of Contents</h6>
+          <ul class="list-unstyled mt-3">
+            <li><a href="#crud">1. Full CRUD Setup</a></li>
+            <li><a href="#search">2. Add Search</a></li>
+            <li><a href="#sort">3. Add Sort</a></li>
+            <li><a href="#filter">4. Add Filter</a></li>
+            <li><a href="#pagination">5. Add Pagination</a></li>
+            <li><a href="#reset">6. Add Reset</a></li>
+            <li><a href="#export">7. Table Export</a></li>
+            <li><a href="#advanced">8. Advanced Features</a></li>
+            <li><a href="#layout">9. Custom Layouts</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9">
+
+        <!-- 1. FULL CRUD SETUP -->
+        <section id="crud" class="section-header">
+          <h2>1. Full CRUD Setup</h2>
+
+          <!-- 1. Migration -->
+          <div class="card">
+            <div class="card-header">1.1 Migration</div>
+            <div class="card-body">
+              <div class="command">php artisan make:migration create_posts_table</div>
+              <div class="file-path">database/migrations/xxxx_create_posts_table.php</div>
+              <pre><code class="language-php">&lt;?php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
+            $table->boolean('is_published')->default(false);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void {
+        Schema::dropIfExists('posts');
+    }
+};</code></pre>
+              <div class="command">php artisan migrate</div>
+            </div>
+          </div>
+
+          <!-- 2. Factory -->
+          <div class="card">
+            <div class="card-header">1.2 Factory</div>
+            <div class="card-body">
+              <div class="file-path">database/factories/PostFactory.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class PostFactory extends Factory {
+    public function definition(): array {
+        return [
+            'title' => fake()->sentence(6),
+            'description' => fake()->paragraph(4),
+            'image' => 'posts/'.fake()->uuid().'.jpg',
+            'is_published' => fake()->boolean(70),
+        ];
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 3. Seeder -->
+          <div class="card">
+            <div class="card-header">1.3 Seeder</div>
+            <div class="card-body">
+              <div class="file-path">database/seeders/PostSeeder.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace Database\Seeders;
+
+use App\Models\Post;
+use Illuminate\Database\Seeder;
+
+class PostSeeder extends Seeder {
+    public function run(): void {
+        Post::factory(100)->create();
+    }
+}</code></pre>
+              <div class="command">php artisan db:seed --class=PostSeeder</div>
+            </div>
+          </div>
+
+          <!-- 4. Model -->
+          <div class="card">
+            <div class="card-header">1.4 Model</div>
+            <div class="card-body">
+              <div class="file-path">app/Models/Post.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Models;
+
+use App\Models\Traits\Scopes\PostScopes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+
+class Post extends Model {
+    use HasFactory, PostScopes, SoftDeletes;
+
+    protected $fillable = ['title', 'description', 'image', 'is_published'];
+    protected $casts = ['is_published' => 'boolean'];
+    
+    // Accessor to get full image URL
+    public function getImageUrlAttribute() {
+        if ($this->image) {
+            return Storage::url($this->image);
+        }
+        return null;
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 5. Model Trait (Scope) -->
+          <div class="card">
+            <div class="card-header">1.5 Model Trait (Scope)</div>
+            <div class="card-body">
+              <div class="command">mkdir -p app/Models/Traits/Scopes</div>
+              <div class="file-path">app/Models/Traits/Scopes/PostScopes.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Models\Traits\Scopes;
+
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+
+trait PostScopes {
+    public function scopeSearch(Builder $query, ?string $search): Builder {
+        if (empty($search)) {
+            return $query;
+        }
+        return $query->where(function (Builder $q) use ($search): void {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+    
+    public function scopeSortBy(Builder $query, string $sortBy, string $sortDirection = 'asc'): Builder {
+        return $query->orderBy($sortBy, $sortDirection);
+    }
+    
+    public function scopePublished(Builder $query, ?string $published): Builder {
+        if ($published === null || $published === '') {
+            return $query;
+        }
+        return $query->where('is_published', $published === 'true');
+    }
+    
+    public function scopePaginateResults(Builder $query, int $perPage = 10, int $page = 1): LengthAwarePaginator {
+        return $query->paginate($perPage, ['*'], 'page', $page);
+    }
+}</code></pre>
+              <div class="alert alert-primary">Add <code>use PostScopes;</code> in <code>Post.php</code></div>
+            </div>
+          </div>
+
+          <!-- 6. Controller -->
+          <div class="card">
+            <div class="card-header">1.6 Controller</div>
+            <div class="card-body">
+              <div class="command">php artisan make:controller PostController --resource --requests</div>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Http\Controllers;
+
+use App\Models\Post;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+
+class PostController extends Controller {
+    public function index(Request $request) {
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDirection = $request->input('sort_direction', 'asc');
+        $published = $request->input('published');
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+        
+        // Create cache key based on filters
+        $cacheKey = "posts_{$search}_{$sortBy}_{$sortDirection}_{$published}_{$perPage}_{$page}";
+        
+        $posts = Cache::remember($cacheKey, 300, function() use ($search, $sortBy, $sortDirection, $published, $perPage, $page) {
+            return Post::search($search)
+                ->published($published)
+                ->sortBy($sortBy, $sortDirection)
+                ->paginateResults($perPage, $page);
+        });
+        
+        return Inertia::render('Post/Index', [
+            'posts' => $posts,
+            'filters' => [
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'published' => $published,
+                'per_page' => $perPage,
+            ],
+        ]);
+    }
+    
+    public function create() { 
+        return Inertia::render('Post/Create'); 
+    }
+    
+    public function store(StorePostRequest $request) {
+        try {
+            $data = $request->validated();
+            
+            // Handle file upload
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('posts', 'public');
+            }
+            
+            $post = Post::create($data);
+            
+            // Clear cache
+            Cache::flush();
+            
+            return redirect()->route('post.index')->with('success', 'Post created successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to create post: ' . $e->getMessage());
+        }
+    }
+    
+    public function edit(Post $post) { 
+        return Inertia::render('Post/Edit', ['post' => $post]); 
+    }
+    
+    public function update(UpdatePostRequest $request, Post $post) {
+        try {
+            $data = $request->validated();
+            
+            // Handle file upload
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($post->image) {
+                    Storage::disk('public')->delete($post->image);
+                }
+                
+                $data['image'] = $request->file('image')->store('posts', 'public');
+            }
+            
+            $post->update($data);
+            
+            // Clear cache
+            Cache::flush();
+            
+            return redirect()->route('post.index')->with('success', 'Post updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to update post: ' . $e->getMessage());
+        }
+    }
+    
+    public function destroy(Post $post) {
+        try {
+            $post->delete();
+            
+            // Clear cache
+            Cache::flush();
+            
+            return redirect()->route('post.index')->with('success', 'Post deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete post: ' . $e->getMessage());
+        }
+    }
+    
+    public function restore($id) {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            $post->restore();
+            
+            // Clear cache
+            Cache::flush();
+            
+            return redirect()->route('post.index')->with('success', 'Post restored successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to restore post: ' . $e->getMessage());
+        }
+    }
+    
+    public function forceDelete($id) {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            
+            // Delete image if exists
+            if ($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+            
+            $post->forceDelete();
+            
+            // Clear cache
+            Cache::flush();
+            
+            return redirect()->route('post.index')->with('success', 'Post permanently deleted.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to permanently delete post: ' . $e->getMessage());
+        }
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 7. Request -->
+          <div class="card">
+            <div class="card-header">1.7 Form Request</div>
+            <div class="card-body">
+              <div class="file-path">app/Http/Requests/StorePostRequest.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StorePostRequest extends FormRequest {
+    public function rules(): array {
+        return [
+            'title' => 'required|string|max:255|unique:posts,title',
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_published' => 'boolean',
+        ];
+    }
+    
+    public function messages(): array {
+        return [
+            'title.required' => 'A title is required',
+            'title.unique' => 'This title has already been taken',
+            'description.max' => 'Description must not exceed 1000 characters',
+            'image.image' => 'The file must be an image',
+            'image.max' => 'The image must not be larger than 2MB',
+        ];
+    }
+}</code></pre>
+              
+              <div class="file-path">app/Http/Requests/UpdatePostRequest.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdatePostRequest extends FormRequest {
+    public function rules(): array {
+        return [
+            'title' => 'sometimes|required|string|max:255|unique:posts,title,' . $this->post->id,
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_published' => 'boolean',
+        ];
+    }
+    
+    public function messages(): array {
+        return [
+            'title.required' => 'A title is required',
+            'title.unique' => 'This title has already been taken',
+            'description.max' => 'Description must not exceed 1000 characters',
+            'image.image' => 'The file must be an image',
+            'image.max' => 'The image must not be larger than 2MB',
+        ];
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 8. Service (Optional) -->
+          <div class="card">
+            <div class="card-header">1.8 Service Class</div>
+            <div class="card-body">
+              <div class="command">mkdir -p app/Services</div>
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Services;
+
+use App\Models\Post;
+use Illuminate\Http\Request;
+
+class PostService {
+    public function getPostList(Request $request) {
+        $filters = [
+            'search' => $request->input('search'),
+            'sort_by' => $request->input('sort_by', 'id'),
+            'sort_direction' => $request->input('sort_direction', 'asc'),
+            'published' => $request->input('published'),
+            'per_page' => $request->input('per_page', 10),
+        ];
+
+        $page = $request->input('page', 1);
+        $perPage = $filters['per_page'];
+
+        // Use model scopes for cleaner query building
+        $query = Post::search($filters['search'] ?? null)
+            ->published($filters['published'] ?? null)
+            ->sortBy($filters['sort_by'] ?? 'id', $filters['sort_direction'] ?? 'asc');
+            
+        $results = $query->paginateResults($perPage, $page);
+
+        return [
+            'posts' => $results,
+            'filters' => $filters,
+        ];
+    }
+
+    public function createPost(array $data) {
+        try {
+            return Post::create($data);
+        } catch (\Exception $exception) {
+            throw new \Exception('Failed to create post: ' . $exception->getMessage());
+        }
+    }
+
+    public function updatePost(Post $post, array $data) {
+        try {
+            $post->update($data);
+            return $post;
+        } catch (\Exception $exception) {
+            throw new \Exception('Failed to update post: ' . $exception->getMessage());
+        }
+    }
+
+    public function deletePost(Post $post) {
+        try {
+            $post->delete();
+            return true;
+        } catch (\Exception $exception) {
+            throw new \Exception('Failed to delete post: ' . $exception->getMessage());
+        }
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 9. TSX Pages -->
+          <div class="card">
+            <div class="card-header">1.9 TSX Pages</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">import { Head, Link, router } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Pencil, Plus, Trash2, ArrowUp, ArrowDown, RotateCcw, Download } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { useDownloadExcel } from 'react-export-table-to-excel';
+
+interface Post {
+  id: number;
+  title: string;
+  description: string | null;
+  image: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Pagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number;
+  to: number;
+  links: {
+    url: string | null;
+    label: string;
+    active: boolean;
+  }[];
+}
+
+interface IndexProps {
+  posts: {
+    data: Post[];
+    links: any[];
+    meta: Pagination;
+  };
+  filters: {
+    search: string | null;
+    sort_by: string;
+    sort_direction: string;
+    published: string | null;
+    per_page: number;
+  };
+}
+
+export default function Index({ posts, filters }: IndexProps) {
+  const [searchQuery, setSearchQuery] = useState(filters.search || '');
+  const [sortBy, setSortBy] = useState(filters.sort_by || 'id');
+  const [sortDirection, setSortDirection] = useState(filters.sort_direction || 'asc');
+  const [publishedFilter, setPublishedFilter] = useState(filters.published || '');
+  const [perPage, setPerPage] = useState(filters.per_page.toString());
+  const tableRef = useRef(null);
+
+  const { onDownload } = useDownloadExcel({
+    currentTableRef: tableRef.current,
+    filename: 'Posts table',
+    sheet: 'Posts'
+  });
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    applyFilters(1);
+  };
+
+  const applyFilters = (page: number = posts.meta.current_page) => {
+    router.get(route('post.index'), { 
+      search: searchQuery,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+      published: publishedFilter || null,
+      per_page: perPage,
+      page: page
+    }, {
+      preserveState: true,
+      replace: true,
+    });
+  };
+
+  const handleSort = (column: string) => {
+    const newDirection = sortBy === column && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortBy(column);
+    setSortDirection(newDirection);
+    
+    router.get(route('post.index'), { 
+      search: searchQuery,
+      sort_by: column,
+      sort_direction: newDirection,
+      published: publishedFilter || null,
+      per_page: perPage,
+      page: 1
+    }, {
+      preserveState: true,
+      replace: true,
+    });
+  };
+
+  const handlePerPageChange = (value: string) => {
+    setPerPage(value);
+    router.get(route('post.index'), { 
+      search: searchQuery,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+      published: publishedFilter || null,
+      per_page: value,
+      page: 1
+    }, {
+      preserveState: true,
+      replace: true,
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    applyFilters(page);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSortBy('id');
+    setSortDirection('asc');
+    setPublishedFilter('');
+    setPerPage('10');
+    
+    router.get(route('post.index'), { 
+      search: '',
+      sort_by: 'id',
+      sort_direction: 'asc',
+      published: null,
+      per_page: 10,
+      page: 1
+    }, {
+      preserveState: true,
+      replace: true,
+    });
+  };
+
+  return (
+    &lt;AppLayout>
+      &lt;Head title="Posts" />
+      
+      &lt;div className="flex justify-between items-center mb-6">
+        &lt;h1 className="text-2xl font-bold">Posts&lt;/h1>
+        &lt;Button asChild>
+          &lt;Link href={route('post.create')}>
+            &lt;Plus className="mr-2 h-4 w-4" /> Create Post
+          &lt;/Link>
+        &lt;/Button>
+      &lt;/div>
+
+      &lt;Card className="mb-6">
+        &lt;CardContent className="pt-6">
+          &lt;form onSubmit={handleSearch} className="flex flex-wrap gap-2">
+            &lt;div className="relative flex-1 min-w-[200px]">
+              &lt;Input
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+              &lt;Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            &lt;/div>
+            
+            &lt;Select value={publishedFilter} onValueChange={setPublishedFilter}>
+              &lt;SelectTrigger className="w-[180px]">
+                &lt;SelectValue placeholder="Filter by status" />
+              &lt;/SelectTrigger>
+              &lt;SelectContent>
+                &lt;SelectItem value="">All Statuses&lt;/SelectItem>
+                &lt;SelectItem value="true">Published&lt;/SelectItem>
+                &lt;SelectItem value="false">Draft&lt;/SelectItem>
+              &lt;/SelectContent>
+            &lt;/Select>
+            
+            &lt;Select value={perPage} onValueChange={handlePerPageChange}>
+              &lt;SelectTrigger className="w-[120px]">
+                &lt;SelectValue placeholder="Per page" />
+              &lt;/SelectTrigger>
+              &lt;SelectContent>
+                &lt;SelectItem value="5">5 per page&lt;/SelectItem>
+                &lt;SelectItem value="10">10 per page&lt;/SelectItem>
+                &lt;SelectItem value="25">25 per page&lt;/SelectItem>
+                &lt;SelectItem value="50">50 per page&lt;/SelectItem>
+              &lt;/SelectContent>
+            &lt;/Select>
+            
+            &lt;Button type="submit">Apply Filters&lt;/Button>
+            &lt;Button type="button" variant="outline" onClick={resetFilters}>
+              &lt;RotateCcw className="mr-2 h-4 w-4" /> Reset
+            &lt;/Button>
+            &lt;Button type="button" variant="outline" onClick={onDownload}>
+              &lt;Download className="mr-2 h-4 w-4" /> Export
+            &lt;/Button>
+          &lt;/form>
+        &lt;/CardContent>
+      &lt;/Card>
+
+      &lt;Card>
+        &lt;CardHeader>
+          &lt;CardTitle>All Posts&lt;/CardTitle>
+        &lt;/CardHeader>
+        &lt;CardContent>
+          &lt;div className="overflow-x-auto">
+            &lt;table ref={tableRef} className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              &lt;thead className="bg-gray-50 dark:bg-gray-800">
+                &lt;tr>
+                  &lt;th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('id')}
+                  >
+                    &lt;div className="flex items-center">
+                      ID
+                      {sortBy === 'id' && (
+                        sortDirection === 'asc' ? 
+                          &lt;ArrowUp className="ml-1 h-4 w-4" /> : 
+                          &lt;ArrowDown className="ml-1 h-4 w-4" />
+                      )}
+                    &lt;/div>
+                  &lt;/th>
+                  &lt;th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('title')}
+                  >
+                    &lt;div className="flex items-center">
+                      Title
+                      {sortBy === 'title' && (
+                        sortDirection === 'asc' ? 
+                          &lt;ArrowUp className="ml-1 h-4 w-4" /> : 
+                          &lt;ArrowDown className="ml-1 h-4 w-4" />
+                      )}
+                    &lt;/div>
+                  &lt;/th>
+                  &lt;th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description&lt;/th>
+                  &lt;th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('is_published')}
+                  >
+                    &lt;div className="flex items-center">
+                      Published
+                      {sortBy === 'is_published' && (
+                        sortDirection === 'asc' ? 
+                          &lt;ArrowUp className="ml-1 h-4 w-4" /> : 
+                          &lt;ArrowDown className="ml-1 h-4 w-4" />
+                      )}
+                    &lt;/div>
+                  &lt;/th>
+                  &lt;th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('created_at')}
+                  >
+                    &lt;div className="flex items-center">
+                      Created At
+                      {sortBy === 'created_at' && (
+                        sortDirection === 'asc' ? 
+                          &lt;ArrowUp className="ml-1 h-4 w-4" /> : 
+                          &lt;ArrowDown className="ml-1 h-4 w-4" />
+                      )}
+                    &lt;/div>
+                  &lt;/th>
+                  &lt;th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions&lt;/th>
+                &lt;/tr>
+              &lt;/thead>
+              &lt;tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {posts.data.map((post) => (
+                  &lt;tr key={post.id}>
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.id}&lt;/td>
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{post.title}&lt;/td>
+                    &lt;td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {post.description?.substring(0, 50)}{post.description && post.description.length > 50 ? '...' : ''}
+                    &lt;/td>
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {post.is_published ? (
+                        &lt;span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          Published
+                        &lt;/span>
+                      ) : (
+                        &lt;span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          Draft
+                        &lt;/span>
+                      )}
+                    &lt;/td>
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    &lt;/td>
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      &lt;div className="flex justify-end space-x-2">
+                        &lt;Button variant="outline" size="sm" asChild>
+                          &lt;Link href={route('post.edit', post.id)}>
+                            &lt;Pencil className="h-4 w-4" />
+                          &lt;/Link>
+                        &lt;/Button>
+                        &lt;Button variant="outline" size="sm" asChild>
+                          &lt;Link
+                            href={route('post.destroy', post.id)}
+                            method="delete"
+                            onClick={(e) => {
+                              if (!confirm('Are you sure you want to delete this post?')) {
+                                e.preventDefault();
+                              }
+                            }}
+                          >
+                            &lt;Trash2 className="h-4 w-4" />
+                          &lt;/Link>
+                        &lt;/Button>
+                      &lt;/div>
+                    &lt;/td>
+                  &lt;/tr>
+                ))}
+              &lt;/tbody>
+            &lt;/table>
+          &lt;/div>
+        &lt;/CardContent>
+        &lt;CardFooter className="flex justify-between items-center">
+          &lt;div className="text-sm text-gray-500 dark:text-gray-400">
+            Showing {posts.meta.from} to {posts.meta.to} of {posts.meta.total} results
+          &lt;/div>
+          &lt;div className="flex space-x-1">
+            {posts.meta.links.map((link, index) => (
+              &lt;Button
+                key={index}
+                variant={link.active ? "default" : "outline"}
+                size="sm"
+                onClick={() => link.url && handlePageChange(index)}
+                disabled={!link.url || link.active}
+                asChild={!link.url || link.active ? false : true}
+              >
+                {link.url && !link.active ? (
+                  &lt;Link href={link.url}>{link.label}&lt;/Link>
+                ) : (
+                  &lt;span>{link.label.replace('&laquo;', '').replace('&raquo;', '')}&lt;/span>
+                )}
+              &lt;/Button>
+            ))}
+          &lt;/div>
+        &lt;/CardFooter>
+      &lt;/Card>
+    &lt;/AppLayout>
+  );
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Create Page -->
+          <div class="card">
+            <div class="card-header">1.10 Create Page</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+              <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
+
+interface CreateProps {
+  errors: Record<string, string>;
+}
+
+export default function Create({ errors }: CreateProps) {
+  const { data, setData, post, processing } = useForm({
+    title: '',
+    description: '',
+    image: '',
+    is_published: false,
+  });
+
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setData('image', file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post(route('post.store'));
+  };
+
+  return (
+    &lt;AppLayout>
+      &lt;Head title="Create Post" />
+      
+      &lt;div className="flex justify-between items-center mb-6">
+        &lt;h1 className="text-2xl font-bold">Create Post&lt;/h1>
+        &lt;Button variant="outline" asChild>
+          &lt;Link href={route('post.index')}>Back to Posts&lt;/Link>
+        &lt;/Button>
+      &lt;/div>
+
+      &lt;Card>
+        &lt;CardHeader>
+          &lt;CardTitle>New Post&lt;/CardTitle>
+        &lt;/CardHeader>
+        &lt;CardContent>
+          &lt;form onSubmit={submit} className="space-y-6">
+            &lt;div>
+              &lt;Label htmlFor="title">Title&lt;/Label>
+              &lt;Input
+                id="title"
+                value={data.title}
+                onChange={(e) => setData('title', e.target.value)}
+                className={errors.title ? 'border-red-500' : ''}
+              />
+              {errors.title && &lt;p className="text-red-500 text-sm mt-1">{errors.title}&lt;/p>}
+            &lt;/div>
+
+            &lt;div>
+              &lt;Label htmlFor="description">Description&lt;/Label>
+              &lt;Textarea
+                id="description"
+                value={data.description}
+                onChange={(e) => setData('description', e.target.value)}
+                className={errors.description ? 'border-red-500' : ''}
+                rows={5}
+              />
+              {errors.description && &lt;p className="text-red-500 text-sm mt-1">{errors.description}&lt;/p>}
+            &lt;/div>
+
+            &lt;div>
+              &lt;Label htmlFor="image">Image&lt;/Label>
+              &lt;Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className={errors.image ? 'border-red-500' : ''}
+              />
+              {errors.image && &lt;p className="text-red-500 text-sm mt-1">{errors.image}&lt;/p>}
+              
+              {previewImage && (
+                &lt;div className="mt-2">
+                  &lt;img 
+                    src={previewImage} 
+                    alt="Preview" 
+                    className="max-w-xs max-h-40 object-cover rounded"
+                  />
+                &lt;/div>
+              )}
+            &lt;/div>
+
+            &lt;div className="flex items-center space-x-2">
+              &lt;Switch
+                id="is_published"
+                checked={data.is_published}
+                onCheckedChange={(checked) => setData('is_published', checked)}
+              />
+              &lt;Label htmlFor="is_published">Published&lt;/Label>
+            &lt;/div>
+
+            &lt;div className="flex justify-end space-x-2">
+              &lt;Button variant="outline" asChild>
+                &lt;Link href={route('post.index')}>Cancel&lt;/Link>
+              &lt;/Button>
+              &lt;Button type="submit" disabled={processing}>
+                {processing ? 'Creating...' : 'Create Post'}
+              &lt;/Button>
+            &lt;/div>
+          &lt;/form>
+        &lt;/CardContent>
+      &lt;/Card>
+    &lt;/AppLayout>
+  );
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Edit Page -->
+          <div class="card">
+            <div class="card-header">1.11 Edit Page</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Edit.tsx</div>
+              <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
+
+interface Post {
+  id: number;
+  title: string;
+  description: string | null;
+  image: string | null;
+  image_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EditProps {
+  post: Post;
+  errors: Record<string, string>;
+}
+
+export default function Edit({ post, errors }: EditProps) {
+  const { data, setData, put, processing } = useForm({
+    title: post.title,
+    description: post.description || '',
+    image: '',
+    is_published: post.is_published,
+  });
+
+  const [previewImage, setPreviewImage] = useState<string | null>(post.image_url || null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setData('image', file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    put(route('post.update', post.id));
+  };
+
+  return (
+    &lt;AppLayout>
+      &lt;Head title="Edit Post" />
+      
+      &lt;div className="flex justify-between items-center mb-6">
+        &lt;h1 className="text-2xl font-bold">Edit Post&lt;/h1>
+        &lt;Button variant="outline" asChild>
+          &lt;Link href={route('post.index')}>Back to Posts&lt;/Link>
+        &lt;/Button>
+      &lt;/div>
+
+      &lt;Card>
+        &lt;CardHeader>
+          &lt;CardTitle>Edit Post&lt;/CardTitle>
+        &lt;/CardHeader>
+        &lt;CardContent>
+          &lt;form onSubmit={submit} className="space-y-6">
+            &lt;div>
+              &lt;Label htmlFor="title">Title&lt;/Label>
+              &lt;Input
+                id="title"
+                value={data.title}
+                onChange={(e) => setData('title', e.target.value)}
+                className={errors.title ? 'border-red-500' : ''}
+              />
+              {errors.title && &lt;p className="text-red-500 text-sm mt-1">{errors.title}&lt;/p>}
+            &lt;/div>
+
+            &lt;div>
+              &lt;Label htmlFor="description">Description&lt;/Label>
+              &lt;Textarea
+                id="description"
+                value={data.description}
+                onChange={(e) => setData('description', e.target.value)}
+                className={errors.description ? 'border-red-500' : ''}
+                rows={5}
+              />
+              {errors.description && &lt;p className="text-red-500 text-sm mt-1">{errors.description}&lt;/p>}
+            &lt;/div>
+
+            &lt;div>
+              &lt;Label htmlFor="image">Image&lt;/Label>
+              &lt;Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className={errors.image ? 'border-red-500' : ''}
+              />
+              {errors.image && &lt;p className="text-red-500 text-sm mt-1">{errors.image}&lt;/p>}
+              
+              {previewImage && (
+                &lt;div className="mt-2">
+                  &lt;img 
+                    src={previewImage} 
+                    alt="Preview" 
+                    className="max-w-xs max-h-40 object-cover rounded"
+                  />
+                &lt;/div>
+              )}
+              
+              {!previewImage && post.image && (
+                &lt;p className="text-sm text-gray-500 mt-2">
+                  Current image will be kept. Upload a new image to replace it.
+                &lt;/p>
+              )}
+            &lt;/div>
+
+            &lt;div className="flex items-center space-x-2">
+              &lt;Switch
+                id="is_published"
+                checked={data.is_published}
+                onCheckedChange={(checked) => setData('is_published', checked)}
+              />
+              &lt;Label htmlFor="is_published">Published&lt;/Label>
+            &lt;/div>
+
+            &lt;div className="flex justify-end space-x-2">
+              &lt;Button variant="outline" asChild>
+                &lt;Link href={route('post.index')}>Cancel&lt;/Link>
+              &lt;/Button>
+              &lt;Button type="submit" disabled={processing}>
+                {processing ? 'Updating...' : 'Update Post'}
+              &lt;/Button>
+            &lt;/div>
+          &lt;/form>
+        &lt;/CardContent>
+      &lt;/Card>
+    &lt;/AppLayout>
+  );
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- 10. Routes -->
+          <div class="card">
+            <div class="card-header">1.12 Routes</div>
+            <div class="card-body">
+              <div class="file-path">routes/web.php</div>
+              <pre><code class="language-php">&lt;?php
+use App\Http\Controllers\PostController;
+use Illuminate\Support\Facades\Route;
+
+Route::resource('post', PostController::class);
+Route::post('/post/{id}/restore', [PostController::class, 'restore'])->name('post.restore');
+Route::delete('/post/{id}/force-delete', [PostController::class, 'forceDelete'])->name('post.force-delete');</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ADD SEARCH -->
+        <section id="search" class="section-header">
+          <h2>2. To Add Search (Server + Frontend)</h2>
+
+          <div class="alert alert-primary">
+            <strong>Just add these codes to your existing setup</strong>
+          </div>
+
+          <!-- Backend -->
+          <div class="card">
+            <div class="card-header">Backend: Controller</div>
+            <div class="card-body">
+              <div class="file-path">PostController.php (index method)</div>
+              <pre><code class="language-php">public function index(Request $request) {
+    $search = $request->input('search');
+    
+    $posts = Post::search($search)->get();
+    
+    return Inertia::render('Post/Index', [
+        'posts' => $posts,
+        'filters' => [
+            'search' => $search,
+        ],
+    ]);
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">const [searchQuery, setSearchQuery] = useState(filters.search || '');
+
+const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.get(route('post.index'), { search: searchQuery }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+&lt;form onSubmit={handleSearch} className="flex gap-2">
+    &lt;div className="relative flex-1">
+        &lt;Input
+            type="text"
+            placeholder="Search posts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+        />
+        &lt;Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+    &lt;/div>
+    &lt;Button type="submit">Search&lt;/Button>
+&lt;/form></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. ADD SORT -->
+        <section id="sort" class="section-header">
+          <h2>3. To Add Sort (Server + Frontend)</h2>
+
+          <div class="alert alert-primary">
+            <strong>Just add these codes to your existing setup</strong>
+          </div>
+
+          <!-- Backend -->
+          <div class="card">
+            <div class="card-header">Backend: Controller</div>
+            <div class="card-body">
+              <div class="file-path">PostController.php (index method)</div>
+              <pre><code class="language-php">public function index(Request $request) {
+    $search = $request->input('search');
+    $sortBy = $request->input('sort_by', 'id');
+    $sortDirection = $request->input('sort_direction', 'asc');
+    
+    $posts = Post::search($search)
+        ->sortBy($sortBy, $sortDirection)
+        ->get();
+    
+    return Inertia::render('Post/Index', [
+        'posts' => $posts,
+        'filters' => [
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ],
+    ]);
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">const [sortBy, setSortBy] = useState(filters.sort_by || 'id');
+const [sortDirection, setSortDirection] = useState(filters.sort_direction || 'asc');
+
+const handleSort = (column: string) => {
+    const newDirection = sortBy === column && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortBy(column);
+    setSortDirection(newDirection);
+    
+    router.get(route('post.index'), { 
+        search: searchQuery,
+        sort_by: column,
+        sort_direction: newDirection
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+&lt;th 
+    className="cursor-pointer"
+    onClick={() => handleSort('title')}
+>
+    Title
+    {sortBy === 'title' && (
+        sortDirection === 'asc' ? 
+            &lt;ArrowUp size={14} /> : 
+            &lt;ArrowDown size={14} />
+    )}
+&lt;/th></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. ADD FILTER -->
+        <section id="filter" class="section-header">
+          <h2>4. To Add Filter (Server + Frontend)</h2>
+
+          <div class="alert alert-primary">
+            <strong>Just add these codes to your existing setup</strong>
+          </div>
+
+          <!-- Backend -->
+          <div class="card">
+            <div class="card-header">Backend: Controller</div>
+            <div class="card-body">
+              <div class="file-path">PostController.php (index method)</div>
+              <pre><code class="language-php">public function index(Request $request) {
+    $search = $request->input('search');
+    $sortBy = $request->input('sort_by', 'id');
+    $sortDirection = $request->input('sort_direction', 'asc');
+    $published = $request->input('published');
+    
+    $posts = Post::search($search)
+        ->published($published)
+        ->sortBy($sortBy, $sortDirection)
+        ->get();
+    
+    return Inertia::render('Post/Index', [
+        'posts' => $posts,
+        'filters' => [
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'published' => $published,
+        ],
+    ]);
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">const [publishedFilter, setPublishedFilter] = useState(filters.published || '');
+
+&lt;Select value={publishedFilter} onValueChange={setPublishedFilter}>
+    &lt;SelectTrigger className="w-[180px]">
+        &lt;SelectValue placeholder="Filter by status" />
+    &lt;/SelectTrigger>
+    &lt;SelectContent>
+        &lt;SelectItem value="">All Statuses&lt;/SelectItem>
+        &lt;SelectItem value="true">Published&lt;/SelectItem>
+        &lt;SelectItem value="false">Draft&lt;/SelectItem>
+    &lt;/SelectContent>
+&lt;/Select></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. ADD PAGINATION -->
+        <section id="pagination" class="section-header">
+          <h2>5. To Add Pagination (Server + Frontend)</h2>
+
+          <div class="alert alert-primary">
+            <strong>Just add these codes to your existing setup</strong>
+          </div>
+
+          <!-- Backend -->
+          <div class="card">
+            <div class="card-header">Backend: Controller</div>
+            <div class="card-body">
+              <div class="file-path">PostController.php (index method)</div>
+              <pre><code class="language-php">public function index(Request $request) {
+    $search = $request->input('search');
+    $sortBy = $request->input('sort_by', 'id');
+    $sortDirection = $request->input('sort_direction', 'asc');
+    $published = $request->input('published');
+    $perPage = $request->input('per_page', 10);
+    $page = $request->input('page', 1);
+    
+    $posts = Post::search($search)
+        ->published($published)
+        ->sortBy($sortBy, $sortDirection)
+        ->paginateResults($perPage, $page);
+    
+    return Inertia::render('Post/Index', [
+        'posts' => $posts,
+        'filters' => [
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'published' => $published,
+            'per_page' => $perPage,
+        ],
+    ]);
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">const [perPage, setPerPage] = useState(filters.per_page.toString());
+
+const handlePageChange = (page: number) => {
+    router.get(route('post.index'), { 
+        search: searchQuery,
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+        published: publishedFilter || null,
+        per_page: perPage,
+        page: page
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+// In pagination component
+{posts.meta.links.map((link, index) => (
+    &lt;Button
+        key={index}
+        variant={link.active ? "default" : "outline"}
+        size="sm"
+        onClick={() => link.url && handlePageChange(index)}
+        disabled={!link.url || link.active}
+        asChild={!link.url || link.active ? false : true}
+    >
+        {link.url && !link.active ? (
+            &lt;Link href={link.url}>{link.label}&lt;/Link>
+        ) : (
+            &lt;span>{link.label.replace('&laquo;', '').replace('&raquo;', '')}&lt;/span>
+        )}
+    &lt;/Button>
+))}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. ADD RESET -->
+        <section id="reset" class="section-header">
+          <h2>6. To Add Reset (Server + Frontend)</h2>
+
+          <div class="alert alert-primary">
+            <strong>Just add these codes to your existing setup</strong>
+          </div>
+
+          <!-- Backend -->
+          <div class="card">
+            <div class="card-header">Backend: Controller</div>
+            <div class="card-body">
+              <div class="file-path">No backend changes needed</div>
+              <pre><code class="language-php">// The controller already handles default values
+// Just ensure your default values are set correctly</code></pre>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">const resetFilters = () => {
+    setSearchQuery('');
+    setSortBy('id');
+    setSortDirection('asc');
+    setPublishedFilter('');
+    setPerPage('10');
+    
+    router.get(route('post.index'), { 
+        search: '',
+        sort_by: 'id',
+        sort_direction: 'asc',
+        published: null,
+        per_page: 10,
+        page: 1
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+&lt;Button type="button" variant="outline" onClick={resetFilters}>
+    &lt;RotateCcw className="mr-2 h-4 w-4" /> Reset
+&lt;/Button></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. TABLE EXPORT -->
+        <section id="export" class="section-header">
+          <h2>7. Table Export</h2>
+
+          <div class="alert alert-primary">
+            <strong>Export table data to Excel with react-export-table-to-excel</strong>
+          </div>
+
+          <!-- Installation -->
+          <div class="card">
+            <div class="card-header">Installation</div>
+            <div class="card-body">
+              <div class="command">npm install react-export-table-to-excel</div>
+            </div>
+          </div>
+
+          <!-- Implementation -->
+          <div class="card">
+            <div class="card-header">Frontend: Index.tsx</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">import { useDownloadExcel } from 'react-export-table-to-excel';
+
+// ... inside component function ...
+const tableRef = useRef(null);
+
+const { onDownload } = useDownloadExcel({
+  currentTableRef: tableRef.current,
+  filename: 'Posts table',
+  sheet: 'Posts'
+});
+
+// In render method:
+&lt;Button onClick={onDownload}>Export to Excel&lt;/Button>
+
+&lt;table ref={tableRef} className="min-w-full divide-y divide-gray-200">
+  &lt;!-- Table content -->
+&lt;/table></code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. ADVANCED FEATURES -->
+        <section id="advanced" class="section-header">
+          <h2>8. Advanced Features</h2>
+
+          <!-- File Upload -->
+          <div class="card">
+            <div class="card-header">File Upload with Preview</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+              <pre><code class="language-tsx">import { useState } from 'react';
+
+const [previewImage, setPreviewImage] = useState(null);
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setData('image', file);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// In render:
+&lt;Input
+  type="file"
+  accept="image/*"
+  onChange={handleImageChange}
+/>
+
+{previewImage && (
+  &lt;img 
+    src={previewImage} 
+    alt="Preview" 
+    className="mt-2 max-w-xs max-h-40 object-cover rounded"
+  />
+)}</code></pre>
+            </div>
+          </div>
+
+          <!-- Soft Deletes -->
+          <div class="card">
+            <div class="card-header">Soft Deletes</div>
+            <div class="card-body">
+              <div class="file-path">database/migrations/xxxx_create_posts_table.php</div>
+              <pre><code class="language-php">$table->softDeletes(); // Add to migration</code></pre>
+              
+              <div class="file-path">app/Models/Post.php</div>
+              <pre><code class="language-php">use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model {
+    use SoftDeletes;
+}</code></pre>
+              
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
+              <pre><code class="language-php">// Restore method
+public function restore($id) {
+    $post = Post::withTrashed()->findOrFail($id);
+    $post->restore();
+    return redirect()->route('post.index')->with('success', 'Post restored.');
+}
+
+// Force delete method
+public function forceDelete($id) {
+    $post = Post::withTrashed()->findOrFail($id);
+    $post->forceDelete();
+    return redirect()->route('post.index')->with('success', 'Post permanently deleted.');
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- Caching -->
+          <div class="card">
+            <div class="card-header">Caching</div>
+            <div class="card-body">
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
+              <pre><code class="language-php">use Illuminate\Support\Facades\Cache;
+
+public function index(Request $request) {
+    // Create cache key based on filters
+    $cacheKey = "posts_" . md5(serialize($request->all()));
+    
+    $posts = Cache::remember($cacheKey, 300, function() use ($request) {
+        // Your query logic here
+        return Post::all();
+    });
+    
+    return Inertia::render('Post/Index', compact('posts'));
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. CUSTOM LAYOUTS -->
+        <section id="layout" class="section-header">
+          <h2>9. Custom Layouts</h2>
+
+          <!-- Auth Layout -->
+          <div class="card">
+            <div class="card-header">Authentication Layout</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/layouts/AuthLayout.tsx</div>
+              <pre><code class="language-tsx">import { ReactNode } from 'react';
+
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+export default function AuthLayout({ children }: AuthLayoutProps) {
+  return (
+    &lt;div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+      &lt;div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+        {children}
+      &lt;/div>
+    &lt;/div>
+  );
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- App Layout -->
+          <div class="card">
+            <div class="card-header">Application Layout</div>
+            <div class="card-body">
+              <div class="file-path">resources/js/layouts/AppLayout.tsx</div>
+              <pre><code class="language-tsx">import { ReactNode } from 'react';
+import { Head } from '@inertiajs/react';
+
+interface AppLayoutProps {
+  title?: string;
+  children: ReactNode;
+}
+
+export default function AppLayout({ title, children }: AppLayoutProps) {
+  return (
+    &lt;div className="min-h-screen bg-gray-100">
+      {title && &lt;Head title={title} />}
+      &lt;nav className="bg-white border-b border-gray-100">
+        &lt;!-- Navigation content -->
+      &lt;/nav>
+      &lt;main>{children}&lt;/main>
+    &lt;/div>
+  );
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; 2025 Laravel + Inertia + React | Production-Ready CRUD System</p>
+    </div>
+  </footer>
+</body>
+</html>
