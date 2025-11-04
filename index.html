@@ -421,10 +421,31 @@ class PostSeeder extends Seeder {
               <p class="alert alert-success">You now have 100 fake posts. Check with <code>php artisan tinker</code> or DB tool.</p>
             </div>
           </div>
-
-          <!-- 1.5 Controller for Index -->
+          
+          <!-- 1.5 Service for Index -->
           <div class="card">
-            <div class="card-header">1.5 Controller for Index (Listing)</div>
+            <div class="card-header">1.5 Service for Index (Listing)</div>
+            <div class="card-body">
+              <p>Create the service with getPostList method. This handles querying the model, keeping the controller clean.</p>
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">&lt;?php
+namespace App\Services;
+
+use App\Models\Post;
+use Illuminate\Http\Request;
+
+class PostService {
+    public function getPostList(Request $request) {
+        return Post::all();
+    }
+}</code></pre>
+              <p class="alert alert-primary">Beginner tip: Services encapsulate logic. Here, getPostList is simple now but will grow with filters later. It's like a method in a Laravel repository.</p>
+            </div>
+          </div>
+
+          <!-- 1.6 Controller for Index -->
+          <div class="card">
+            <div class="card-header">1.6 Controller for Index (Listing)</div>
             <div class="card-body">
               <p>Create the controller with the index method. This fetches all posts and renders the React page with data as props (like passing variables to a Blade view).</p>
               <div class="command">php artisan make:controller PostController</div>
@@ -454,9 +475,9 @@ class PostController extends Controller {
             </div>
           </div>
 
-          <!-- 1.6 Routes -->
+          <!-- 1.7 Routes -->
           <div class="card">
-            <div class="card-header">1.6 Routes</div>
+            <div class="card-header">1.7 Routes</div>
             <div class="card-body">
               <p>Add resource routes. More added later.</p>
               <div class="file-path">routes/web.php</div>
@@ -479,30 +500,9 @@ Route::resource('posts', PostController::class);</code></pre>
           <h2>2. Index Page (READ)</h2>
           <p>To get the listing of posts, we need to write these codes: First, create the controller and service for the index functionality, then the React component. The controller is like your Laravel route handler—it fetches data and renders the Inertia page (similar to returning a view). The service keeps business logic separate, like a repository or action class in Laravel, making the controller thin and easier to test. No form request is needed for index since there's no input validation.</p>
 
-          <!-- 2.2 Service for Index -->
+          <!-- 2.1 Initial Index Page -->
           <div class="card">
-            <div class="card-header">5.2 Service for Index (Listing)</div>
-            <div class="card-body">
-              <p>Create the service with getPostList method. This handles querying the model, keeping the controller clean.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">&lt;?php
-namespace App\Services;
-
-use App\Models\Post;
-use Illuminate\Http\Request;
-
-class PostService {
-    public function getPostList(Request $request) {
-        return Post::all();
-    }
-}</code></pre>
-              <p class="alert alert-primary">Beginner tip: Services encapsulate logic. Here, getPostList is simple now but will grow with filters later. It's like a method in a Laravel repository.</p>
-            </div>
-          </div>
-
-          <!-- 2.3 Initial Index Page -->
-          <div class="card">
-            <div class="card-header">5.3 Initial Index Page (React Component)</div>
+            <div class="card-header">2.1 Initial Index Page (React Component)</div>
             <div class="card-body">
               <p>Create directory resources/js/pages/Post if needed. This is the React component for listing, like a Blade view.</p>
               <div class="file-path">resources/js/pages/Post/Index.tsx</div>
@@ -582,7 +582,7 @@ export default function Index({ posts }: IndexProps) {
 
           <!-- 3.1 Controller for Create and Store -->
           <div class="card">
-            <div class="card-header">6.1 Controller for Create and Store (Initial with Inline Validation)</div>
+            <div class="card-header">3.1 Controller for Create and Store (Initial with Inline Validation)</div>
             <div class="card-body">
               <p>Update the controller to add create and store. Use inline validation for now—we'll refactor to form request next.</p>
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
@@ -631,7 +631,7 @@ class PostController extends Controller {
 
           <!-- 3.2 Form Request for Store -->
           <div class="card">
-            <div class="card-header">6.2 Form Request for Store (Validation)</div>
+            <div class="card-header">3.2 Form Request for Store (Validation)</div>
             <div class="card-body">
               <p>Create a form request to handle validation separately, making the controller cleaner. This is Laravel's way to extract rules.</p>
               <div class="command">php artisan make:request PostRequest</div>
@@ -676,7 +676,7 @@ class PostRequest extends FormRequest {
 
           <!-- 3.3 Updated Controller with Form Request -->
           <div class="card">
-            <div class="card-header">6.3 Updated Controller with Form Request for Store</div>
+            <div class="card-header">3.3 Updated Controller with Form Request for Store</div>
             <div class="card-body">
               <p>Replace Request with PostRequest in store, remove inline validation.</p>
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
@@ -705,7 +705,7 @@ public function store(PostRequest $request) {
 
           <!-- 3.4 Service for Create and Store -->
           <div class="card">
-            <div class="card-header">6.4 Service for Create and Store</div>
+            <div class="card-header">3.4 Service for Create and Store</div>
             <div class="card-body">
               <p>Update service to add createPost method.</p>
               <div class="file-path">app/Services/PostService.php (Updated)</div>
@@ -724,7 +724,7 @@ public function createPost(array $data) {
 
           <!-- 3.5 Initial Create Page -->
           <div class="card">
-            <div class="card-header">6.5 Initial Create Page (React Component)</div>
+            <div class="card-header">3.5 Initial Create Page (React Component)</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Create.tsx</div>
               <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
@@ -810,7 +810,7 @@ export default function Create() {
 
           <!-- 4.1 Controller for Edit and Update -->
           <div class="card">
-            <div class="card-header">7.1 Controller for Edit and Update</div>
+            <div class="card-header">4.1 Controller for Edit and Update</div>
             <div class="card-body">
               <p>Update controller to add edit and update, using PostRequest for validation.</p>
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
@@ -841,7 +841,7 @@ public function update(PostRequest $request, Post $post) {
 
           <!-- 4.2 Form Request for Update -->
           <div class="card">
-            <div class="card-header">7.2 Form Request for Update (Already Handles It)</div>
+            <div class="card-header">4.2 Form Request for Update (Already Handles It)</div>
             <div class="card-body">
               <p>The existing PostRequest handles update by ignoring the current post ID in unique rule. No changes needed.</p>
               <p class="alert alert-primary">Beginner tip: Rule::unique()-&gt;ignore($this-&gt;post) skips the current record, perfect for updates.</p>
@@ -850,7 +850,7 @@ public function update(PostRequest $request, Post $post) {
 
           <!-- 4.3 Service for Edit and Update -->
           <div class="card">
-            <div class="card-header">7.3 Service for Edit and Update</div>
+            <div class="card-header">4.3 Service for Edit and Update</div>
             <div class="card-body">
               <p>Update service to add updatePost method.</p>
               <div class="file-path">app/Services/PostService.php (Updated)</div>
@@ -870,7 +870,7 @@ public function updatePost(Post $post, array $data) {
 
           <!-- 4.4 Initial Edit Page -->
           <div class="card">
-            <div class="card-header">7.4 Initial Edit Page (React Component)</div>
+            <div class="card-header">4.4 Initial Edit Page (React Component)</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Edit.tsx</div>
               <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
@@ -968,7 +968,7 @@ export default function Edit({ post }: EditProps) {
 
           <!-- 5.1 Controller for Show -->
           <div class="card">
-            <div class="card-header">8.1 Controller for Show</div>
+            <div class="card-header">5.1 Controller for Show</div>
             <div class="card-body">
               <p>Update controller to add show.</p>
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
@@ -984,7 +984,7 @@ public function show(Post $post) {
 
           <!-- 5.2 Service for Show -->
           <div class="card">
-            <div class="card-header">8.2 Service for Show</div>
+            <div class="card-header">5.2 Service for Show</div>
             <div class="card-body">
               <p>Update service to add getPostById.</p>
               <div class="file-path">app/Services/PostService.php (Updated)</div>
@@ -1003,7 +1003,7 @@ public function getPostById($id) {
 
           <!-- 5.3 Initial Show Page -->
           <div class="card">
-            <div class="card-header">8.3 Initial Show Page (React Component)</div>
+            <div class="card-header">5.3 Initial Show Page (React Component)</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Show.tsx</div>
               <pre><code class="language-tsx">import { Head, Link } from '@inertiajs/react';
@@ -1071,7 +1071,7 @@ export default function Show({ post }: ShowProps) {
 
           <!-- 5.4 Updated Index Page with Show Link -->
           <div class="card">
-            <div class="card-header">8.4 Updated Index Page with Show Link</div>
+            <div class="card-header">5.4 Updated Index Page with Show Link</div>
             <div class="card-body">
               <p>Add show link in actions column.</p>
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
@@ -1099,7 +1099,7 @@ export default function Show({ post }: ShowProps) {
 
           <!-- 6.1 Controller for Destroy -->
           <div class="card">
-            <div class="card-header">9.1 Controller for Destroy</div>
+            <div class="card-header">6.1 Controller for Destroy</div>
             <div class="card-body">
               <p>Update controller to add destroy.</p>
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
@@ -1119,7 +1119,7 @@ public function destroy(Post $post) {
 
           <!-- 6.2 Service for Destroy -->
           <div class="card">
-            <div class="card-header">9.2 Service for Destroy</div>
+            <div class="card-header">6.2 Service for Destroy</div>
             <div class="card-body">
               <p>Update service to add deletePost.</p>
               <div class="file-path">app/Services/PostService.php (Updated)</div>
@@ -1139,7 +1139,7 @@ public function deletePost(Post $post) {
 
           <!-- 6.3 Updated Index Page with Delete -->
           <div class="card">
-            <div class="card-header">9.3 Updated Index Page with Delete</div>
+            <div class="card-header">6.3 Updated Index Page with Delete</div>
             <div class="card-body">
               <p>Add to actions.</p>
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
