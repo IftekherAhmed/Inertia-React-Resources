@@ -285,13 +285,20 @@
           <h2>Prerequisites</h2>
           <div class="alert alert-warning">
             <ul>
-              <li>Laravel 12 project: <code>composer create-project laravel/laravel my-app</code>.</li>
+              <li>If you already have PHP and Composer installed, you may install the Laravel installer via Composer: <code>composer global require laravel/installer</code>.</li>
+              <li>For a fully-featured, graphical PHP installation and management experience, check out Laravel Herd.</li>
+              <li>After you have installed PHP, Composer, and the Laravel installer, you're ready to create a new Laravel application. The Laravel installer will prompt you to select your preferred testing framework, database, and starter kit: <code>laravel new example-app</code>.</li>
+              <li>Once the application has been created, you can start Laravel's local development server, queue worker, and Vite development server using the dev Composer script:
+                <ul>
+                  <li><code>cd example-app</code></li>
+                  <li><code>npm install && npm run build</code></li>
+                  <li><code>composer run dev</code></li>
+                </ul>
+              </li>
               <li>Inertia with React: <code>composer require inertiajs/inertia-laravel</code>, then <code>php artisan inertia:middleware</code>, and setup React with <code>npm install @inertiajs/react</code>.</li>
-              <li>Node.js/npm for frontend.</li>
               <li>TypeScript: Add via <code>npm install typescript @types/react</code>.</li>
               <li>UI: Tailwind (<code>npm install -D tailwindcss</code>) and ShadCN (<code>npx shadcn-ui@latest init</code>).</li>
             </ul>
-            <p>Run <code>npm run dev</code> and <code>php artisan serve</code> to start.</p>
           </div>
         </section>
 
