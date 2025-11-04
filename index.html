@@ -247,23 +247,23 @@
             <li><a href="#introduction">Introduction</a></li>
             <li><a href="#prerequisites">Prerequisites</a></li>
             <li><a href="#basics">1. Basics Setup</a></li>
-            <li><a href="#index">5. Index Page (READ)</a></li>
-            <li><a href="#create">6. Create Page</a></li>
-            <li><a href="#edit">7. Edit Page</a></li>
-            <li><a href="#show">8. Show Page</a></li>
-            <li><a href="#delete">9. Delete Functionality</a></li>
-            <li><a href="#search">10. Add Search</a></li>
-            <li><a href="#sort">11. Add Sort</a></li>
-            <li><a href="#filter">12. Add Filter</a></li>
-            <li><a href="#pagination">13. Add Pagination</a></li>
-            <li><a href="#reset">14. Add Reset</a></li>
-            <li><a href="#export">15. Table Export</a></li>
-            <li><a href="#hooks">16. Inertia React JS Basic Functions</a></li>
-            <li><a href="#rows">17. Add/Remove Row</a></li>
-            <li><a href="#price">18. Price Calculation</a></li>
-            <li><a href="#toggler">19. Toggler</a></li>
-            <li><a href="#advanced">20. Advanced Features</a></li>
-            <li><a href="#layout">21. Custom Layouts</a></li>
+            <li><a href="#index">2. Index Page (READ)</a></li>
+            <li><a href="#create">3. Create Page</a></li>
+            <li><a href="#edit">4. Edit Page</a></li>
+            <li><a href="#show">5. Show Page</a></li>
+            <li><a href="#delete">6. Delete Functionality</a></li>
+            <li><a href="#search">7. Add Search</a></li>
+            <li><a href="#sort">8. Add Sort</a></li>
+            <li><a href="#filter">9. Add Filter</a></li>
+            <li><a href="#pagination">10. Add Pagination</a></li>
+            <li><a href="#reset">11. Add Reset</a></li>
+            <li><a href="#export">12. Table Export</a></li>
+            <li><a href="#hooks">13. Inertia React JS Basic Functions</a></li>
+            <li><a href="#rows">14. Add/Remove Row</a></li>
+            <li><a href="#price">15. Price Calculation</a></li>
+            <li><a href="#toggler">16. Toggler</a></li>
+            <li><a href="#advanced">17. Advanced Features</a></li>
+            <li><a href="#layout">18. Custom Layouts</a></li>
           </ul>
         </div>
       </div>
@@ -474,12 +474,12 @@ Route::resource('posts', PostController::class);</code></pre>
           </div>
         </section>
 
-        <!-- 5. INDEX PAGE -->
+        <!-- 2. INDEX PAGE -->
         <section id="index" class="section-header">
-          <h2>5. Index Page (READ)</h2>
+          <h2>2. Index Page (READ)</h2>
           <p>To get the listing of posts, we need to write these codes: First, create the controller and service for the index functionality, then the React component. The controller is like your Laravel route handler—it fetches data and renders the Inertia page (similar to returning a view). The service keeps business logic separate, like a repository or action class in Laravel, making the controller thin and easier to test. No form request is needed for index since there's no input validation.</p>
 
-          <!-- 5.2 Service for Index -->
+          <!-- 2.2 Service for Index -->
           <div class="card">
             <div class="card-header">5.2 Service for Index (Listing)</div>
             <div class="card-body">
@@ -500,7 +500,7 @@ class PostService {
             </div>
           </div>
 
-          <!-- 5.3 Initial Index Page -->
+          <!-- 2.3 Initial Index Page -->
           <div class="card">
             <div class="card-header">5.3 Initial Index Page (React Component)</div>
             <div class="card-body">
@@ -575,12 +575,12 @@ export default function Index({ posts }: IndexProps) {
           </div>
         </section>
 
-        <!-- 6. CREATE PAGE -->
+        <!-- 3. CREATE PAGE -->
         <section id="create" class="section-header">
-          <h2>6. Create Page</h2>
+          <h2>3. Create Page</h2>
           <p>To handle creating a new post (create and store actions), we need to write these codes: Update the controller with create and store methods, introduce a form request for validation, update the service with createPost, then the React component. The create method renders the form page, store handles submission (like a POST route in Laravel). Form request is like Laravel's FormRequest class for validation. Service handles the creation logic.</p>
 
-          <!-- 6.1 Controller for Create and Store -->
+          <!-- 3.1 Controller for Create and Store -->
           <div class="card">
             <div class="card-header">6.1 Controller for Create and Store (Initial with Inline Validation)</div>
             <div class="card-body">
@@ -629,7 +629,7 @@ class PostController extends Controller {
             </div>
           </div>
 
-          <!-- 6.2 Form Request for Store -->
+          <!-- 3.2 Form Request for Store -->
           <div class="card">
             <div class="card-header">6.2 Form Request for Store (Validation)</div>
             <div class="card-body">
@@ -674,7 +674,7 @@ class PostRequest extends FormRequest {
             </div>
           </div>
 
-          <!-- 6.3 Updated Controller with Form Request -->
+          <!-- 3.3 Updated Controller with Form Request -->
           <div class="card">
             <div class="card-header">6.3 Updated Controller with Form Request for Store</div>
             <div class="card-body">
@@ -703,7 +703,7 @@ public function store(PostRequest $request) {
             </div>
           </div>
 
-          <!-- 6.4 Service for Create and Store -->
+          <!-- 3.4 Service for Create and Store -->
           <div class="card">
             <div class="card-header">6.4 Service for Create and Store</div>
             <div class="card-body">
@@ -722,7 +722,7 @@ public function createPost(array $data) {
             </div>
           </div>
 
-          <!-- 6.5 Initial Create Page -->
+          <!-- 3.5 Initial Create Page -->
           <div class="card">
             <div class="card-header">6.5 Initial Create Page (React Component)</div>
             <div class="card-body">
@@ -803,12 +803,12 @@ export default function Create() {
           </div>
         </section>
 
-        <!-- 7. EDIT PAGE -->
+        <!-- 4. EDIT PAGE -->
         <section id="edit" class="section-header">
-          <h2>7. Edit Page</h2>
+          <h2>4. Edit Page</h2>
           <p>To handle editing an existing post (edit and update actions), we need to write these codes: Update the controller with edit and update methods, use the existing form request for validation (it handles unique ignore for update), update the service with updatePost, then the React component. Similar to create, but loads existing data.</p>
 
-          <!-- 7.1 Controller for Edit and Update -->
+          <!-- 4.1 Controller for Edit and Update -->
           <div class="card">
             <div class="card-header">7.1 Controller for Edit and Update</div>
             <div class="card-body">
@@ -839,7 +839,7 @@ public function update(PostRequest $request, Post $post) {
             </div>
           </div>
 
-          <!-- 7.2 Form Request for Update -->
+          <!-- 4.2 Form Request for Update -->
           <div class="card">
             <div class="card-header">7.2 Form Request for Update (Already Handles It)</div>
             <div class="card-body">
@@ -848,7 +848,7 @@ public function update(PostRequest $request, Post $post) {
             </div>
           </div>
 
-          <!-- 7.3 Service for Edit and Update -->
+          <!-- 4.3 Service for Edit and Update -->
           <div class="card">
             <div class="card-header">7.3 Service for Edit and Update</div>
             <div class="card-body">
@@ -868,7 +868,7 @@ public function updatePost(Post $post, array $data) {
             </div>
           </div>
 
-          <!-- 7.4 Initial Edit Page -->
+          <!-- 4.4 Initial Edit Page -->
           <div class="card">
             <div class="card-header">7.4 Initial Edit Page (React Component)</div>
             <div class="card-body">
@@ -961,12 +961,12 @@ export default function Edit({ post }: EditProps) {
           </div>
         </section>
 
-        <!-- 8. SHOW PAGE -->
+        <!-- 5. SHOW PAGE -->
         <section id="show" class="section-header">
-          <h2>8. Show Page</h2>
+          <h2>5. Show Page</h2>
           <p>To display a single post (show action), we need to write these codes: Update the controller with show method, update the service with getPostById, then the React component. Add link from index. No form request needed since no input.</p>
 
-          <!-- 8.1 Controller for Show -->
+          <!-- 5.1 Controller for Show -->
           <div class="card">
             <div class="card-header">8.1 Controller for Show</div>
             <div class="card-body">
@@ -982,7 +982,7 @@ public function show(Post $post) {
             </div>
           </div>
 
-          <!-- 8.2 Service for Show -->
+          <!-- 5.2 Service for Show -->
           <div class="card">
             <div class="card-header">8.2 Service for Show</div>
             <div class="card-body">
@@ -1001,7 +1001,7 @@ public function getPostById($id) {
             </div>
           </div>
 
-          <!-- 8.3 Initial Show Page -->
+          <!-- 5.3 Initial Show Page -->
           <div class="card">
             <div class="card-header">8.3 Initial Show Page (React Component)</div>
             <div class="card-body">
@@ -1069,7 +1069,7 @@ export default function Show({ post }: ShowProps) {
             </div>
           </div>
 
-          <!-- 8.4 Updated Index Page with Show Link -->
+          <!-- 5.4 Updated Index Page with Show Link -->
           <div class="card">
             <div class="card-header">8.4 Updated Index Page with Show Link</div>
             <div class="card-body">
@@ -1092,12 +1092,12 @@ export default function Show({ post }: ShowProps) {
           </div>
         </section>
 
-        <!-- 9. DELETE FUNCTIONALITY -->
+        <!-- 6. DELETE FUNCTIONALITY -->
         <section id="delete" class="section-header">
-          <h2>9. Delete Functionality</h2>
+          <h2>6. Delete Functionality</h2>
           <p>To handle deleting a post (destroy action), we need to write these codes: Update the controller with destroy method, update the service with deletePost, then add delete button to the React index page with confirmation. Uses soft delete. No form request needed.</p>
 
-          <!-- 9.1 Controller for Destroy -->
+          <!-- 6.1 Controller for Destroy -->
           <div class="card">
             <div class="card-header">9.1 Controller for Destroy</div>
             <div class="card-body">
@@ -1117,7 +1117,7 @@ public function destroy(Post $post) {
             </div>
           </div>
 
-          <!-- 9.2 Service for Destroy -->
+          <!-- 6.2 Service for Destroy -->
           <div class="card">
             <div class="card-header">9.2 Service for Destroy</div>
             <div class="card-body">
@@ -1137,7 +1137,7 @@ public function deletePost(Post $post) {
             </div>
           </div>
 
-          <!-- 9.3 Updated Index Page with Delete -->
+          <!-- 6.3 Updated Index Page with Delete -->
           <div class="card">
             <div class="card-header">9.3 Updated Index Page with Delete</div>
             <div class="card-body">
@@ -1170,13 +1170,13 @@ public function deletePost(Post $post) {
           </div>
         </section>
 
-        <!-- 10. ADD SEARCH -->
+        <!-- 7. ADD SEARCH -->
         <section id="search" class="section-header">
-          <h2>10. Add Search</h2>
+          <h2>7. Add Search</h2>
           <p>Server-side search on title/description. Add scope to model, update service and controller, then frontend input.</p>
 
           <div class="card">
-            <div class="card-header">10.1 Model Scope for Search</div>
+            <div class="card-header">7.1 Model Scope for Search</div>
             <div class="card-body">
               <p>Create trait for reusable scope.</p>
               <div class="file-path">app/Models/Traits/Scopes/SearchScope.php</div>
@@ -1205,7 +1205,7 @@ trait SearchScope {
           </div>
 
           <div class="card">
-            <div class="card-header">10.2 Updated Controller for Search</div>
+            <div class="card-header">7.2 Updated Controller for Search</div>
             <div class="card-body">
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
               <pre><code class="language-php">// Updated index
@@ -1220,7 +1220,7 @@ public function index(Request $request) {
           </div>
 
           <div class="card">
-            <div class="card-header">10.3 Updated Service for Search</div>
+            <div class="card-header">7.3 Updated Service for Search</div>
             <div class="card-body">
               <div class="file-path">app/Services/PostService.php (Updated)</div>
               <pre><code class="language-php">// Updated getPostList
@@ -1236,7 +1236,7 @@ public function getPostList(Request $request) {
           </div>
 
           <div class="card">
-            <div class="card-header">10.4 Updated Index Page with Search</div>
+            <div class="card-header">7.4 Updated Index Page with Search</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">import { useState, useEffect } from 'react';
@@ -1254,13 +1254,13 @@ const [searchQuery, setSearchQuery] = useState(filters.search || '');
           </div>
         </section>
 
-        <!-- 11. ADD SORT -->
+        <!-- 8. ADD SORT -->
         <section id="sort" class="section-header">
-          <h2>11. Add Sort</h2>
+          <h2>8. Add Sort</h2>
           <p>Sortable columns. Add scope, update service/controller, frontend click handlers.</p>
 
           <div class="card">
-            <div class="card-header">11.1 Add Sort Scope Trait</div>
+            <div class="card-header">8.1 Add Sort Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/SortScope.php</div>
               <pre><code class="language-php">&lt;?php
@@ -1277,7 +1277,7 @@ trait SortScope {
           </div>
 
           <div class="card">
-            <div class="card-header">11.2 Updated Model with Sort Scope</div>
+            <div class="card-header">8.2 Updated Model with Sort Scope</div>
             <div class="card-body">
               <div class="file-path">app/Models/Post.php (Updated)</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\SortScope;
@@ -1287,7 +1287,7 @@ trait SortScope {
           </div>
 
           <div class="card">
-            <div class="card-header">11.3 Updated Post Service with Sort</div>
+            <div class="card-header">8.3 Updated Post Service with Sort</div>
             <div class="card-body">
               <div class="file-path">app/Services/PostService.php (Updated)</div>
               <pre><code class="language-php">// Updated getPostList
@@ -1308,7 +1308,7 @@ public function getPostList(Request $request) {
           </div>
 
           <div class="card">
-            <div class="card-header">11.4 Updated Controller with Sort</div>
+            <div class="card-header">8.4 Updated Controller with Sort</div>
             <div class="card-body">
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
               <pre><code class="language-php">// Updated index
@@ -1323,7 +1323,7 @@ public function index(Request $request) {
           </div>
 
           <div class="card">
-            <div class="card-header">11.5 Updated Index Page with Sort</div>
+            <div class="card-header">8.5 Updated Index Page with Sort</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">// Update props filters to include sort_by, sort_direction
@@ -1349,13 +1349,13 @@ const handleSort = (column: string) =&gt; {
           </div>
         </section>
 
-        <!-- 12. ADD FILTER -->
+        <!-- 9. ADD FILTER -->
         <section id="filter" class="section-header">
-          <h2>12. Add Filter</h2>
+          <h2>9. Add Filter</h2>
           <p>Filter by published. Similar flow.</p>
 
           <div class="card">
-            <div class="card-header">12.1 Add Filter Scope Trait</div>
+            <div class="card-header">9.1 Add Filter Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/FilterScope.php</div>
               <pre><code class="language-php">&lt;?php
@@ -1375,7 +1375,7 @@ trait FilterScope {
           </div>
 
           <div class="card">
-            <div class="card-header">12.2 Updated Model with Filter Scope</div>
+            <div class="card-header">9.2 Updated Model with Filter Scope</div>
             <div class="card-body">
               <div class="file-path">app/Models/Post.php (Updated)</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\FilterScope;
@@ -1385,7 +1385,7 @@ trait FilterScope {
           </div>
 
           <div class="card">
-            <div class="card-header">12.3 Updated Post Service with Filter</div>
+            <div class="card-header">9.3 Updated Post Service with Filter</div>
             <div class="card-body">
               <div class="file-path">app/Services/PostService.php (Updated)</div>
               <pre><code class="language-php">// Updated filters array add 'published' => $request->input('published')
@@ -1398,7 +1398,7 @@ if (!is_null($filters['published']) &amp;&amp; $filters['published'] !== '') {
           </div>
 
           <div class="card">
-            <div class="card-header">12.4 Updated Controller with Filter</div>
+            <div class="card-header">9.4 Updated Controller with Filter</div>
             <div class="card-body">
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
               <pre><code class="language-php">// Updated filters in render: $request->only(['search', 'sort_by', 'sort_direction', 'published'])</code></pre>
@@ -1406,7 +1406,7 @@ if (!is_null($filters['published']) &amp;&amp; $filters['published'] !== '') {
           </div>
 
           <div class="card">
-            <div class="card-header">12.5 Updated Index Page with Filter</div>
+            <div class="card-header">9.5 Updated Index Page with Filter</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">// Update props filters to include published?: string
@@ -1433,13 +1433,13 @@ const handleFilter = () =&gt; {
           </div>
         </section>
 
-        <!-- 13. ADD PAGINATION -->
+        <!-- 10. ADD PAGINATION -->
         <section id="pagination" class="section-header">
-          <h2>13. Add Pagination</h2>
+          <h2>10. Add Pagination</h2>
           <p>Server-side pagination. Update to paginate, add frontend controls.</p>
 
           <div class="card">
-            <div class="card-header">13.1 Add Pagination Scope Trait</div>
+            <div class="card-header">10.1 Add Pagination Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/PaginationScope.php</div>
               <pre><code class="language-php">&lt;?php
@@ -1457,7 +1457,7 @@ trait PaginationScope {
           </div>
 
           <div class="card">
-            <div class="card-header">13.2 Updated Model with Pagination Scope</div>
+            <div class="card-header">10.2 Updated Model with Pagination Scope</div>
             <div class="card-body">
               <div class="file-path">app/Models/Post.php (Updated)</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\PaginationScope;
@@ -1467,7 +1467,7 @@ trait PaginationScope {
           </div>
 
           <div class="card">
-            <div class="card-header">13.3 Updated Post Service with Pagination</div>
+            <div class="card-header">10.3 Updated Post Service with Pagination</div>
             <div class="card-body">
               <div class="file-path">app/Services/PostService.php (Updated)</div>
               <pre><code class="language-php">// Add to filters 'per_page' => $request->input('per_page', 10)
@@ -1479,7 +1479,7 @@ return $query->paginateResults($filters['per_page'], $request->input('page', 1))
           </div>
 
           <div class="card">
-            <div class="card-header">13.4 Updated Controller with Pagination</div>
+            <div class="card-header">10.4 Updated Controller with Pagination</div>
             <div class="card-body">
               <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
               <pre><code class="language-php">// Updated filters only add 'per_page'</code></pre>
@@ -1487,7 +1487,7 @@ return $query->paginateResults($filters['per_page'], $request->input('page', 1))
           </div>
 
           <div class="card">
-            <div class="card-header">13.5 Updated Index Page with Pagination</div>
+            <div class="card-header">10.5 Updated Index Page with Pagination</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">// Update props posts to be paginator: { data: Post[], current_page: number, last_page: number, ... }
@@ -1510,13 +1510,13 @@ const handlePageChange = (page: number) =&gt; {
           </div>
         </section>
 
-        <!-- 14. ADD RESET -->
+        <!-- 11. ADD RESET -->
         <section id="reset" class="section-header">
-          <h2>14. Add Reset</h2>
+          <h2>11. Add Reset</h2>
           <p>Button to clear filters.</p>
 
           <div class="card">
-            <div class="card-header">14.1 Updated Index Page with Reset</div>
+            <div class="card-header">11.1 Updated Index Page with Reset</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">const resetFilters = () =&gt; {
@@ -1534,13 +1534,13 @@ const handlePageChange = (page: number) =&gt; {
           </div>
         </section>
 
-        <!-- 15. TABLE EXPORT -->
+        <!-- 12. TABLE EXPORT -->
         <section id="export" class="section-header">
-          <h2>15. Table Export</h2>
+          <h2>12. Table Export</h2>
           <p>Export to Excel.</p>
 
           <div class="card">
-            <div class="card-header">15.1 Updated Index Page with Export</div>
+            <div class="card-header">12.1 Updated Index Page with Export</div>
             <div class="card-body">
               <p>Install: <code>npm install react-export-table-to-excel</code></p>
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
@@ -1565,13 +1565,13 @@ const { onDownload } = useDownloadExcel({
           </div>
         </section>
 
-        <!-- 16. INERTIA REACT JS BASIC FUNCTIONS -->
+        <!-- 13. INERTIA REACT JS BASIC FUNCTIONS -->
         <section id="hooks" class="section-header">
-          <h2>16. Inertia React JS Basic Functions</h2>
+          <h2>13. Inertia React JS Basic Functions</h2>
           <p>Key React/Inertia concepts with examples. Add to existing pages as needed.</p>
 
           <div class="card">
-            <div class="card-header">16.1 Hooks and Router Examples</div>
+            <div class="card-header">13.1 Hooks and Router Examples</div>
             <div class="card-body">
               <p>In Index.tsx (add for demo):</p>
               <pre><code class="language-tsx">// useState: Local variable that re-renders on change
@@ -1591,13 +1591,13 @@ router.reload(); // Refresh data</code></pre>
           </div>
         </section>
 
-        <!-- 17. ADD/REMOVE ROW -->
+        <!-- 14. ADD/REMOVE ROW -->
         <section id="rows" class="section-header">
-          <h2>17. Add/Remove Row</h2>
+          <h2>14. Add/Remove Row</h2>
           <p>Dynamic fields, e.g., in Create for multiple tags.</p>
 
           <div class="card">
-            <div class="card-header">17.1 Updated Create Page with Dynamic Rows</div>
+            <div class="card-header">14.1 Updated Create Page with Dynamic Rows</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
               <pre><code class="language-tsx">// Add state
@@ -1628,13 +1628,13 @@ const updateTag = (id, value) =&gt; setTags(tags.map(tag =&gt; tag.id === id ? {
           </div>
         </section>
 
-        <!-- 18. PRICE CALCULATION -->
+        <!-- 15. PRICE CALCULATION -->
         <section id="price" class="section-header">
-          <h2>18. Price Calculation</h2>
+          <h2>15. Price Calculation</h2>
           <p>Example for dynamic calc, e.g., if posts had price.</p>
 
           <div class="card">
-            <div class="card-header">18.1 Updated Create Page with Calculation</div>
+            <div class="card-header">15.1 Updated Create Page with Calculation</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
               <pre><code class="language-tsx">// Assume price, tax fields
@@ -1652,13 +1652,13 @@ const total = useMemo(() =&gt; price + (price * tax), [price, tax]);
           </div>
         </section>
 
-        <!-- 19. TOGGLER -->
+        <!-- 16. TOGGLER -->
         <section id="toggler" class="section-header">
-          <h2>19. Toggler</h2>
+          <h2>16. Toggler</h2>
           <p>Toggle sections.</p>
 
           <div class="card">
-            <div class="card-header">19.1 Updated Index Page with Toggler</div>
+            <div class="card-header">16.1 Updated Index Page with Toggler</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
               <pre><code class="language-tsx">const [showAdvanced, setShowAdvanced] = useState(false);
@@ -1673,12 +1673,12 @@ const total = useMemo(() =&gt; price + (price * tax), [price, tax]);
           </div>
         </section>
 
-        <!-- 20. ADVANCED FEATURES -->
+        <!-- 17. ADVANCED FEATURES -->
         <section id="advanced" class="section-header">
-          <h2>20. Advanced Features</h2>
+          <h2>17. Advanced Features</h2>
 
           <div class="card">
-            <div class="card-header">20.1 File Upload Preview</div>
+            <div class="card-header">17.1 File Upload Preview</div>
             <div class="card-body">
               <p>Update Create/Edit for preview.</p>
               <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
@@ -1699,7 +1699,7 @@ const handleImageChange = (e) =&gt; {
           </div>
 
           <div class="card">
-            <div class="card-header">20.2 Restore/Force Delete</div>
+            <div class="card-header">17.2 Restore/Force Delete</div>
             <div class="card-body">
               <p>Add routes:</p>
               <div class="file-path">routes/web.php (Updated)</div>
@@ -1735,7 +1735,7 @@ public function forceDelete($id) {
           </div>
 
           <div class="card">
-            <div class="card-header">20.3 Caching</div>
+            <div class="card-header">17.3 Caching</div>
             <div class="card-body">
               <p>Update service getPostList with cache.</p>
               <div class="file-path">app/Services/PostService.php (Updated)</div>
@@ -1753,13 +1753,13 @@ $results = Cache::remember($cacheKey, 300, function() use ($query, $filters) {
           </div>
         </section>
 
-        <!-- 21. CUSTOM LAYOUTS -->
+        <!-- 18. CUSTOM LAYOUTS -->
         <section id="layout" class="section-header">
-          <h2>21. Custom Layouts</h2>
+          <h2>18. Custom Layouts</h2>
           <p>Reusable wrappers like Blade layouts.</p>
 
           <div class="card">
-            <div class="card-header">21.1 App Layout</div>
+            <div class="card-header">18.1 App Layout</div>
             <div class="card-body">
               <div class="file-path">resources/js/layouts/app-layout.tsx</div>
               <pre><code class="language-tsx">import { ReactNode } from 'react';
