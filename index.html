@@ -39,11 +39,13 @@
       background: #f4f6f9;
     }
 
-    .navbar {
-      background: var(--primary);
-      font-weight: 500;
+    .nav {
+        font-size: 15px;
     }
-    .navbar-brand, .nav-link { color: white !important; }
+
+    .nav-pills .nav-link {
+        border-radius: 50px;
+    }
 
     .hero {
       background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
@@ -307,14 +309,41 @@
           <h2>1. Basics Setup</h2>
           <p>Let's set up the database and model. This is pure Laravel—no React yet. Run commands and edit files as shown.</p>
 
-          <!-- 1. Migration -->
-          <div class="card">
-            <div class="card-header">1.1 Migration</div>
-            <div class="card-body">
-              <p>Create the migration for posts table with basic fields.</p>
-              <div class="command">php artisan make:migration create_posts_table</div>
-              <div class="file-path">database/migrations/xxxx_xx_xx_xxxxxx_create_posts_table.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="basicsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="migration-tab" data-bs-toggle="tab" data-bs-target="#migration" type="button" role="tab" aria-controls="migration" aria-selected="true">1.1 Migration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="factory-tab" data-bs-toggle="tab" data-bs-target="#factory" type="button" role="tab" aria-controls="factory" aria-selected="false">1.2 Factory</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="model-tab" data-bs-toggle="tab" data-bs-target="#model" type="button" role="tab" aria-controls="model" aria-selected="false">1.3 Model</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="seeder-tab" data-bs-toggle="tab" data-bs-target="#seeder" type="button" role="tab" aria-controls="seeder" aria-selected="false">1.4 Seeder</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="service-tab" data-bs-toggle="tab" data-bs-target="#service" type="button" role="tab" aria-controls="service" aria-selected="false">1.5 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="controller-tab" data-bs-toggle="tab" data-bs-target="#controller" type="button" role="tab" aria-controls="controller" aria-selected="false">1.6 Controller</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="routes-tab" data-bs-toggle="tab" data-bs-target="#routes" type="button" role="tab" aria-controls="routes" aria-selected="false">1.7 Routes</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="basicsTabContent">
+            <!-- 1.1 Migration -->
+            <div class="tab-pane fade show active" id="migration" role="tabpanel" aria-labelledby="migration-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create the migration for posts table with basic fields.</p>
+                  <div class="command">php artisan make:migration create_posts_table</div>
+                  <div class="file-path">database/migrations/xxxx_xx_xx_xxxxxx_create_posts_table.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -340,19 +369,20 @@ return new class extends Migration
         Schema::dropIfExists('posts');
     }
 };</code></pre>
-              <div class="command">php artisan migrate</div>
-              <p class="alert alert-success">Now your database has a posts table. Soft deletes are included for later use.</p>
+                  <div class="command">php artisan migrate</div>
+                  <p class="alert alert-success">Now your database has a posts table. Soft deletes are included for later use.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 1.2 Factory -->
-          <div class="card">
-            <div class="card-header">1.2 Factory</div>
-            <div class="card-body">
-              <p>Create factory for fake data.</p>
-              <div class="command">php artisan make:factory PostFactory</div>
-              <div class="file-path">database/factories/PostFactory.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 1.2 Factory -->
+            <div class="tab-pane fade" id="factory" role="tabpanel" aria-labelledby="factory-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create factory for fake data.</p>
+                  <div class="command">php artisan make:factory PostFactory</div>
+                  <div class="file-path">database/factories/PostFactory.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace Database\Factories;
 
@@ -373,18 +403,19 @@ class PostFactory extends Factory
         ];
     }
 }</code></pre>
-              <p class="alert alert-success">This generates realistic test data.</p>
+                  <p class="alert alert-success">This generates realistic test data.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 1.3 Model -->
-          <div class="card">
-            <div class="card-header">1.3 Model</div>
-            <div class="card-body">
-              <p>Create model with basics. Scopes added later.</p>
-              <div class="command">php artisan make:model Post</div>
-              <div class="file-path">app/Models/Post.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 1.3 Model -->
+            <div class="tab-pane fade" id="model" role="tabpanel" aria-labelledby="model-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create model with basics. Scopes added later.</p>
+                  <div class="command">php artisan make:model Post</div>
+                  <div class="file-path">app/Models/Post.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Models;
 
@@ -408,18 +439,19 @@ class Post extends Model
         return $this-&gt;image ? Storage::url($this-&gt;image) : null;
     }
 }</code></pre>
-              <p class="alert alert-success">Model ready. Accessor for image URL is like a computed property.</p>
+                  <p class="alert alert-success">Model ready. Accessor for image URL is like a computed property.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 1.4 Seeder -->
-          <div class="card">
-            <div class="card-header">1.4 Seeder</div>
-            <div class="card-body">
-              <p>Create seeder to populate data.</p>
-              <div class="command">php artisan make:seeder PostSeeder</div>
-              <div class="file-path">database/seeders/PostSeeder.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 1.4 Seeder -->
+            <div class="tab-pane fade" id="seeder" role="tabpanel" aria-labelledby="seeder-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create seeder to populate data.</p>
+                  <div class="command">php artisan make:seeder PostSeeder</div>
+                  <div class="file-path">database/seeders/PostSeeder.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace Database\Seeders;
 
@@ -433,18 +465,19 @@ class PostSeeder extends Seeder
         Post::factory(100)-&gt;create();
     }
 }</code></pre>
-              <div class="command">php artisan db:seed --class=PostSeeder</div>
-              <p class="alert alert-success">You now have 100 fake posts. Check with <code>php artisan tinker</code> or DB tool.</p>
+                  <div class="command">php artisan db:seed --class=PostSeeder</div>
+                  <p class="alert alert-success">You now have 100 fake posts. Check with <code>php artisan tinker</code> or DB tool.</p>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <!-- 1.5 Service for Index -->
-          <div class="card">
-            <div class="card-header">1.5 Service for Index (Listing)</div>
-            <div class="card-body">
-              <p>Create the service with getPostList method. This handles querying the model, keeping the controller clean.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">&lt;?php
+
+            <!-- 1.5 Service for Index -->
+            <div class="tab-pane fade" id="service" role="tabpanel" aria-labelledby="service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create the service with getPostList method. This handles querying the model, keeping the controller clean.</p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Services;
 
@@ -467,18 +500,19 @@ class PostService
         }
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Services encapsulate logic. Here, getPostList is simple now but will grow with filters later. It's like a method in a Laravel repository.</p>
+                  <p class="alert alert-primary">Beginner tip: Services encapsulate logic. Here, getPostList is simple now but will grow with filters later. It's like a method in a Laravel repository.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 1.6 Controller for Index -->
-          <div class="card">
-            <div class="card-header">1.6 Controller for Index (Listing)</div>
-            <div class="card-body">
-              <p>Create the controller with the index method. This fetches all posts and renders the React page with data as props (like passing variables to a Blade view).</p>
-              <div class="command">php artisan make:controller PostController</div>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 1.6 Controller for Index -->
+            <div class="tab-pane fade" id="controller" role="tabpanel" aria-labelledby="controller-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create the controller with the index method. This fetches all posts and renders the React page with data as props (like passing variables to a Blade view).</p>
+                  <div class="command">php artisan make:controller PostController</div>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Http\Controllers;
 
@@ -501,18 +535,19 @@ class PostController extends Controller
         return Inertia::render('Post/Index', ['posts' =&gt; $result]);
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: The constructor injects the service (like dependency injection in Laravel). index() calls the service to get data, then passes it to Inertia::render, which loads the React component at resources/js/pages/Post/Index.tsx.</p>
-              <p class="alert alert-success">Test: Visit /posts after adding the service and TSX below—you should see a blank page or error until the React file is added.</p>
+                  <p class="alert alert-primary">Beginner tip: The constructor injects the service (like dependency injection in Laravel). index() calls the service to get data, then passes it to Inertia::render, which loads the React component at resources/js/pages/Post/Index.tsx.</p>
+                  <p class="alert alert-success">Test: Visit /posts after adding the service and TSX below—you should see a blank page or error until the React file is added.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 1.7 Routes -->
-          <div class="card">
-            <div class="card-header">1.7 Routes</div>
-            <div class="card-body">
-              <p>Add resource routes. More added later.</p>
-              <div class="file-path">routes/web.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 1.7 Routes -->
+            <div class="tab-pane fade" id="routes" role="tabpanel" aria-labelledby="routes-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Add resource routes. More added later.</p>
+                  <div class="file-path">routes/web.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
@@ -522,7 +557,9 @@ Route::get('/', function () {
 });
 
 Route::resource('posts', PostController::class);</code></pre>
-              <p class="alert alert-success">Routes set. Controller created next.</p>
+                  <p class="alert alert-success">Routes set. Controller created next.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -666,13 +703,31 @@ export default function Index({ posts, filters = {} }: IndexProps) {
           <h2>3. Create Page</h2>
           <p>To handle creating a new post (create and store actions), we need to write these codes: Update the controller with create and store methods, introduce a form request for validation, update the service with createPost, then the React component. The create method renders the form page, store handles submission (like a POST route in Laravel). Form request is like Laravel's FormRequest class for validation. Service handles the creation logic.</p>
 
-          <!-- 3.1 Controller for Create and Store -->
-          <div class="card">
-            <div class="card-header">3.1 Controller for Create and Store</div>
-            <div class="card-body">
-              <p>Update the controller to add create and store. Use form request for validation.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="createTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="create-controller-tab" data-bs-toggle="tab" data-bs-target="#create-controller" type="button" role="tab" aria-controls="create-controller" aria-selected="true">3.1 Controller</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="create-request-tab" data-bs-toggle="tab" data-bs-target="#create-request" type="button" role="tab" aria-controls="create-request" aria-selected="false">3.2 Form Request</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="create-service-tab" data-bs-toggle="tab" data-bs-target="#create-service" type="button" role="tab" aria-controls="create-service" aria-selected="false">3.4 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="create-component-tab" data-bs-toggle="tab" data-bs-target="#create-component" type="button" role="tab" aria-controls="create-component" aria-selected="false">3.5 React Component</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="createTabContent">
+            <!-- 3.1 Controller for Create and Store -->
+            <div class="tab-pane fade show active" id="create-controller" role="tabpanel" aria-labelledby="create-controller-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update the controller to add create and store. Use form request for validation.</p>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Http\Controllers;
 
@@ -720,18 +775,19 @@ class PostController extends Controller
         }
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: create() just renders the form (like get route). store() validates input, handles file upload (using Laravel Storage), calls service to create, and redirects with flash message (Inertia handles sessions like Laravel).</p>
+                  <p class="alert alert-primary">Beginner tip: create() just renders the form (like get route). store() validates input, handles file upload (using Laravel Storage), calls service to create, and redirects with flash message (Inertia handles sessions like Laravel).</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 3.2 Form Request for Store -->
-          <div class="card">
-            <div class="card-header">3.2 Form Request for Store (Validation)</div>
-            <div class="card-body">
-              <p>Create a form request to handle validation separately, making the controller cleaner. This is Laravel's way to extract rules.</p>
-              <div class="command">php artisan make:request PostRequest</div>
-              <div class="file-path">app/Http/Requests/PostRequest.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 3.2 Form Request for Store -->
+            <div class="tab-pane fade" id="create-request" role="tabpanel" aria-labelledby="create-request-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create a form request to handle validation separately, making the controller cleaner. This is Laravel's way to extract rules.</p>
+                  <div class="command">php artisan make:request PostRequest</div>
+                  <div class="file-path">app/Http/Requests/PostRequest.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Http\Requests;
 
@@ -769,17 +825,18 @@ class PostRequest extends FormRequest
         ];
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: rules() defines validation like in controller. messages() customizes errors. It handles both create (post) and update (patch) by checking method.</p>
+                  <p class="alert alert-primary">Beginner tip: rules() defines validation like in controller. messages() customizes errors. It handles both create (post) and update (patch) by checking method.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 3.4 Service for Create and Store -->
-          <div class="card">
-            <div class="card-header">3.4 Service for Create and Store</div>
-            <div class="card-body">
-              <p>Update service to add createPost method.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">&lt;?php
+            <!-- 3.4 Service for Create and Store -->
+            <div class="tab-pane fade" id="create-service" role="tabpanel" aria-labelledby="create-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update service to add createPost method.</p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Services;
 
@@ -811,16 +868,17 @@ class PostService
         }
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Service wraps model create with error handling, like a Laravel action.</p>
+                  <p class="alert alert-primary">Beginner tip: Service wraps model create with error handling, like a Laravel action.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 3.5 Initial Create Page -->
-          <div class="card">
-            <div class="card-header">3.5 Initial Create Page (React Component)</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
-              <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
+            <!-- 3.5 Initial Create Page -->
+            <div class="tab-pane fade" id="create-component" role="tabpanel" aria-labelledby="create-component-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+                  <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -931,8 +989,10 @@ export default function Create() {
     &lt;/AppLayout&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">React explained: useForm handles form state and submission (like Livewire's $wire). Controlled inputs bind value/onChange. Preview uses URL.createObjectURL for client-side image preview.</p>
-              <p class="alert alert-success">Test create—visit /posts/create and submit form. See preview on upload.</p>
+                  <p class="alert alert-primary">React explained: useForm handles form state and submission (like Livewire's $wire). Controlled inputs bind value/onChange. Preview uses URL.createObjectURL for client-side image preview.</p>
+                  <p class="alert alert-success">Test create—visit /posts/create and submit form. See preview on upload.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -942,13 +1002,28 @@ export default function Create() {
           <h2>4. Edit Page</h2>
           <p>To handle editing a post (edit and update actions), we need to write these codes: Update the controller with edit and update methods, update the service with updatePost, then the React component. The edit method renders the form page, update handles submission (like a PATCH route in Laravel). Service handles the update logic.</p>
 
-          <!-- 4.1 Controller for Edit and Update -->
-          <div class="card">
-            <div class="card-header">4.1 Controller for Edit and Update</div>
-            <div class="card-body">
-              <p>Update the controller to add edit and update.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">// ... existing index, create, store ...
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="editTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="edit-controller-tab" data-bs-toggle="tab" data-bs-target="#edit-controller" type="button" role="tab" aria-controls="edit-controller" aria-selected="true">4.1 Controller</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="edit-service-tab" data-bs-toggle="tab" data-bs-target="#edit-service" type="button" role="tab" aria-controls="edit-service" aria-selected="false">4.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="edit-component-tab" data-bs-toggle="tab" data-bs-target="#edit-component" type="button" role="tab" aria-controls="edit-component" aria-selected="false">4.3 React Component</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="editTabContent">
+            <!-- 4.1 Controller for Edit and Update -->
+            <div class="tab-pane fade show active" id="edit-controller" role="tabpanel" aria-labelledby="edit-controller-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update the controller to add edit and update.</p>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">// ... existing index, create, store ...
 
 public function edit($id)
 {
@@ -970,17 +1045,18 @@ public function update(PostRequest $request, $id)
         return back()-&gt;with('error', $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: edit() fetches post and renders form. update() validates, handles file (deletes old if new), calls service, redirects.</p>
+                  <p class="alert alert-primary">Beginner tip: edit() fetches post and renders form. update() validates, handles file (deletes old if new), calls service, redirects.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 4.2 Service for Edit and Update -->
-          <div class="card">
-            <div class="card-header">4.2 Service for Edit and Update</div>
-            <div class="card-body">
-              <p>Update service to add updatePost method.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// ... existing methods ...
+            <!-- 4.2 Service for Edit and Update -->
+            <div class="tab-pane fade" id="edit-service" role="tabpanel" aria-labelledby="edit-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update service to add updatePost method.</p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// ... existing methods ...
 
 public function updatePost($id, array $data)
 {
@@ -998,16 +1074,17 @@ public function updatePost($id, array $data)
         throw new \Exception('Failed to update post: ' . $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Service wraps model update with error handling and image cleanup.</p>
+                  <p class="alert alert-primary">Beginner tip: Service wraps model update with error handling and image cleanup.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 4.3 Initial Edit Page -->
-          <div class="card">
-            <div class="card-header">4.3 Initial Edit Page (React Component)</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Edit.tsx</div>
-              <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
+            <!-- 4.3 Initial Edit Page -->
+            <div class="tab-pane fade" id="edit-component" role="tabpanel" aria-labelledby="edit-component-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Edit.tsx</div>
+                  <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -1134,8 +1211,10 @@ export default function Edit({ post }: EditProps) {
     &lt;/AppLayout&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">React explained: useEffect syncs initial data (like mounted() in Livewire). Patch for updates.</p>
-              <p class="alert alert-success">Test edit—visit /posts/{id}/edit and submit form. Image preview updates.</p>
+                  <p class="alert alert-primary">React explained: useEffect syncs initial data (like mounted() in Livewire). Patch for updates.</p>
+                  <p class="alert alert-success">Test edit—visit /posts/{id}/edit and submit form. Image preview updates.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1145,30 +1224,46 @@ export default function Edit({ post }: EditProps) {
           <h2>5. Show Page</h2>
           <p>To handle viewing a post (show action), we need to write these codes: Update the controller with show method, update the service with getPostById, then the React component. The show method renders the page, service handles fetching the post. For better UX, we'll use a modal in Index instead of a separate page, but here's the full modal code as a separate component.</p>
 
-          <!-- 5.1 Controller for Show -->
-          <div class="card">
-            <div class="card-header">5.1 Controller for Show</div>
-            <div class="card-body">
-              <p>Update the controller to add show (optional if using modal).</p>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">// ... existing methods ...
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="showTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="show-controller-tab" data-bs-toggle="tab" data-bs-target="#show-controller" type="button" role="tab" aria-controls="show-controller" aria-selected="true">5.1 Controller</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="show-service-tab" data-bs-toggle="tab" data-bs-target="#show-service" type="button" role="tab" aria-controls="show-service" aria-selected="false">5.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="show-modal-tab" data-bs-toggle="tab" data-bs-target="#show-modal" type="button" role="tab" aria-controls="show-modal" aria-selected="false">5.3 Modal Component</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="showTabContent">
+            <!-- 5.1 Controller for Show -->
+            <div class="tab-pane fade show active" id="show-controller" role="tabpanel" aria-labelledby="show-controller-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update the controller to add show (optional if using modal).</p>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">// ... existing methods ...
 
 public function show($id)
 {
     $post = $this-&gt;postService-&gt;getPostById($id);
     return Inertia::render('Post/Show', ['post' =&gt; $post]);
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: show() fetches post and renders page. Modal uses data from Index props—no extra call.</p>
+                  <p class="alert alert-primary">Beginner tip: show() fetches post and renders page. Modal uses data from Index props—no extra call.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 5.2 Service for Show -->
-          <div class="card">
-            <div class="card-header">5.2 Service for Show</div>
-            <div class="card-body">
-              <p>Update service to ensure getPostById is defined.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// ... existing methods ...
+            <!-- 5.2 Service for Show -->
+            <div class="tab-pane fade" id="show-service" role="tabpanel" aria-labelledby="show-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update service to ensure getPostById is defined.</p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// ... existing methods ...
 
 public function getPostById($id)
 {
@@ -1178,17 +1273,18 @@ public function getPostById($id)
         throw new \Exception('Post not found: ' . $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Wraps model find with error handling.</p>
+                  <p class="alert alert-primary">Beginner tip: Wraps model find with error handling.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 5.3 Show Modal Component -->
-          <div class="card">
-            <div class="card-header">5.3 Show Modal Component (Separate File)</div>
-            <div class="card-body">
-              <p>Create this separate component for reusability, like a Blade partial.</p>
-              <div class="file-path">resources/js/pages/Post/PostModal.tsx</div>
-              <pre><code class="language-tsx">import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+            <!-- 5.3 Show Modal Component -->
+            <div class="tab-pane fade" id="show-modal" role="tabpanel" aria-labelledby="show-modal-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create this separate component for reusability, like a Blade partial.</p>
+                  <div class="file-path">resources/js/pages/Post/PostModal.tsx</div>
+                  <pre><code class="language-tsx">import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -1288,8 +1384,10 @@ export default function PostModal({ post, isOpen, onClose }: PostModalProps) {
     &lt;/Dialog&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">React explained: Props pass data (like Blade variables). Dialog from ShadCN for modal. Import into Index.tsx as shown in 2.1.</p>
-              <p class="alert alert-success">Test—click View in list, see modal with details.</p>
+                  <p class="alert alert-primary">React explained: Props pass data (like Blade variables). Dialog from ShadCN for modal. Import into Index.tsx as shown in 2.1.</p>
+                  <p class="alert alert-success">Test—click View in list, see modal with details.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1299,13 +1397,28 @@ export default function PostModal({ post, isOpen, onClose }: PostModalProps) {
           <h2>6. Delete Functionality</h2>
           <p>To handle deleting a post (destroy action), we need to write these codes: Update the controller with destroy method, update the service with deletePost, then add delete button to the React index page with confirmation. Uses soft delete. No form request needed.</p>
 
-          <!-- 6.1 Controller for Destroy -->
-          <div class="card">
-            <div class="card-header">6.1 Controller for Destroy</div>
-            <div class="card-body">
-              <p>Update controller to add destroy.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">// ... existing methods ...
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="deleteTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="delete-controller-tab" data-bs-toggle="tab" data-bs-target="#delete-controller" type="button" role="tab" aria-controls="delete-controller" aria-selected="true">6.1 Controller</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="delete-service-tab" data-bs-toggle="tab" data-bs-target="#delete-service" type="button" role="tab" aria-controls="delete-service" aria-selected="false">6.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="delete-index-tab" data-bs-toggle="tab" data-bs-target="#delete-index" type="button" role="tab" aria-controls="delete-index" aria-selected="false">6.3 Index Page</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="deleteTabContent">
+            <!-- 6.1 Controller for Destroy -->
+            <div class="tab-pane fade show active" id="delete-controller" role="tabpanel" aria-labelledby="delete-controller-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update controller to add destroy.</p>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">// ... existing methods ...
 
 public function destroy(Post $post)
 {
@@ -1317,17 +1430,18 @@ public function destroy(Post $post)
         return back()-&gt;with('error', $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Model binding, calls service for soft delete.</p>
+                  <p class="alert alert-primary">Beginner tip: Model binding, calls service for soft delete.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 6.2 Service for Destroy -->
-          <div class="card">
-            <div class="card-header">6.2 Service for Destroy</div>
-            <div class="card-body">
-              <p>Update service to add deletePost.</p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// ... existing methods ...
+            <!-- 6.2 Service for Destroy -->
+            <div class="tab-pane fade" id="delete-service" role="tabpanel" aria-labelledby="delete-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update service to add deletePost.</p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// ... existing methods ...
 
 public function deletePost(Post $post)
 {
@@ -1338,17 +1452,20 @@ public function deletePost(Post $post)
         throw new \Exception('Failed to delete post: ' . $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Soft delete marks as deleted, doesn't remove from DB.</p>
+                  <p class="alert alert-primary">Beginner tip: Soft delete marks as deleted, doesn't remove from DB.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 6.3 Updated Index Page with Delete -->
-          <div class="card">
-            <div class="card-header">6.3 Updated Index Page with Delete</div>
-            <div class="card-body">
-              <p>The delete button is already in Index.tsx (from 2.1). It uses method="delete" for CSRF-safe DELETE request.</p>
-              <p class="alert alert-primary">method="delete" sends DELETE request. onClick for confirmation—like JS in Blade.</p>
-              <p class="alert alert-success">Test delete—post disappears (soft deleted).</p>
+            <!-- 6.3 Updated Index Page with Delete -->
+            <div class="tab-pane fade" id="delete-index" role="tabpanel" aria-labelledby="delete-index-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>The delete button is already in Index.tsx (from 2.1). It uses method="delete" for CSRF-safe DELETE request.</p>
+                  <p class="alert alert-primary">method="delete" sends DELETE request. onClick for confirmation—like JS in Blade.</p>
+                  <p class="alert alert-success">Test delete—post disappears (soft deleted).</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1358,13 +1475,28 @@ public function deletePost(Post $post)
           <h2>7. Add Search</h2>
           <p>Server-side search on title/description. Add scope to model, update service and controller, then frontend input.</p>
 
-          <!-- 7.1 Model Scope for Search -->
-          <div class="card">
-            <div class="card-header">7.1 Model Scope for Search</div>
-            <div class="card-body">
-              <p>Create trait for reusable scope.</p>
-              <div class="file-path">app/Models/Traits/Scopes/SearchScope.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="searchTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="search-model-tab" data-bs-toggle="tab" data-bs-target="#search-model" type="button" role="tab" aria-controls="search-model" aria-selected="true">7.1 Model Scope</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="search-service-tab" data-bs-toggle="tab" data-bs-target="#search-service" type="button" role="tab" aria-controls="search-service" aria-selected="false">7.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="search-index-tab" data-bs-toggle="tab" data-bs-target="#search-index" type="button" role="tab" aria-controls="search-index" aria-selected="false">7.3 Index Page</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="searchTabContent">
+            <!-- 7.1 Model Scope for Search -->
+            <div class="tab-pane fade show active" id="search-model" role="tabpanel" aria-labelledby="search-model-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Create trait for reusable scope.</p>
+                  <div class="file-path">app/Models/Traits/Scopes/SearchScope.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Models\Traits\Scopes;
 
@@ -1383,22 +1515,23 @@ trait SearchScope
         });
     }
 }</code></pre>
-              <div class="file-path">app/Models/Post.php</div>
-              <pre><code class="language-php">// Add to top
+                  <div class="file-path">app/Models/Post.php</div>
+                  <pre><code class="language-php">// Add to top
 use App\Models\Traits\Scopes\SearchScope;
 
 // In class
 use HasFactory, SoftDeletes, SearchScope;</code></pre>
-              <p class="alert alert-primary">Scopes are like query methods on models (e.g., Post::search('foo'))</p>
+                  <p class="alert alert-primary">Scopes are like query methods on models (e.g., Post::search('foo'))</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 7.2 Updated Service for Search -->
-          <div class="card">
-            <div class="card-header">7.2 Updated Service for Search</div>
-            <div class="card-body">
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// Updated getPostList
+            <!-- 7.2 Updated Service for Search -->
+            <div class="tab-pane fade" id="search-service" role="tabpanel" aria-labelledby="search-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// Updated getPostList
 public function getPostList(Request $request)
 {
     $filters = [
@@ -1419,15 +1552,16 @@ public function getPostList(Request $request)
 
     return $query-&gt;get(); // Will change to paginate in section 10
 }</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 7.3 Updated Index Page with Search -->
-          <div class="card">
-            <div class="card-header">7.3 Updated Index Page with Search</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
-              <pre><code class="language-tsx">// Add imports
+            <!-- 7.3 Updated Index Page with Search -->
+            <div class="tab-pane fade" id="search-index" role="tabpanel" aria-labelledby="search-index-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+                  <pre><code class="language-tsx">// Add imports
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
@@ -1451,7 +1585,9 @@ const handleSearch = () =&gt; {
   /&gt;
   &lt;Button onClick={handleSearch} className="ml-2"&gt;Search&lt;/Button&gt;
 &lt;/div&gt;</code></pre>
-              <p class="alert alert-success">Test search—list filters on title/description.</p>
+                  <p class="alert alert-success">Test search—list filters on title/description.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1461,12 +1597,27 @@ const handleSearch = () =&gt; {
           <h2>8. Add Sort</h2>
           <p>Sortable columns. Add scope, update service/controller, frontend click handlers.</p>
 
-          <!-- 8.1 Add Sort Scope Trait -->
-          <div class="card">
-            <div class="card-header">8.1 Add Sort Scope Trait</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Traits/Scopes/SortScope.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="sortTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="sort-model-tab" data-bs-toggle="tab" data-bs-target="#sort-model" type="button" role="tab" aria-controls="sort-model" aria-selected="true">8.1 Sort Scope Trait</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="sort-service-tab" data-bs-toggle="tab" data-bs-target="#sort-service" type="button" role="tab" aria-controls="sort-service" aria-selected="false">8.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="sort-index-tab" data-bs-toggle="tab" data-bs-target="#sort-index" type="button" role="tab" aria-controls="sort-index" aria-selected="false">8.3 Index Page</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="sortTabContent">
+            <!-- 8.1 Add Sort Scope Trait -->
+            <div class="tab-pane fade show active" id="sort-model" role="tabpanel" aria-labelledby="sort-model-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Models/Traits/Scopes/SortScope.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Models\Traits\Scopes;
 
@@ -1479,29 +1630,31 @@ trait SortScope
         return $query-&gt;orderBy($sortBy, $sortDirection);
     }
 }</code></pre>
-              <div class="file-path">app/Models/Post.php</div>
-              <pre><code class="language-php">// Add use App\Models\Traits\Scopes\SortScope;
+                  <div class="file-path">app/Models/Post.php</div>
+                  <pre><code class="language-php">// Add use App\Models\Traits\Scopes\SortScope;
 
 // In use: HasFactory, SoftDeletes, SearchScope, SortScope;</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 8.2 Updated Service with Sort -->
-          <div class="card">
-            <div class="card-header">8.2 Updated Service with Sort</div>
-            <div class="card-body">
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// In getPostList, after search...
+            <!-- 8.2 Updated Service with Sort -->
+            <div class="tab-pane fade" id="sort-service" role="tabpanel" aria-labelledby="sort-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// In getPostList, after search...
 $query = $query-&gt;sortBy($filters['sort_by'], $filters['sort_direction']);</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 8.3 Updated Index with Sort -->
-          <div class="card">
-            <div class="card-header">8.3 Updated Index with Sort</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
-              <pre><code class="language-tsx">// Add to component
+            <!-- 8.3 Updated Index with Sort -->
+            <div class="tab-pane fade" id="sort-index" role="tabpanel" aria-labelledby="sort-index-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+                  <pre><code class="language-tsx">// Add to component
 const handleSort = (column: string) =&gt; {
   const newDirection = filters.sort_by === column &amp;&amp; filters.sort_direction === 'asc' ? 'desc' : 'asc';
   router.get('/posts', {
@@ -1519,8 +1672,10 @@ const handleSort = (column: string) =&gt; {
 &gt;
   Title {filters.sort_by === 'title' &amp;&amp; (filters.sort_direction === 'asc' ? ' ↑' : ' ↓')}
 &lt;/th&gt;</code></pre>
-              <p class="alert alert-primary">Click toggles asc/desc. Preserves other filters.</p>
-              <p class="alert alert-success">Test sort—click title to sort.</p>
+                  <p class="alert alert-primary">Click toggles asc/desc. Preserves other filters.</p>
+                  <p class="alert alert-success">Test sort—click title to sort.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1530,12 +1685,27 @@ const handleSort = (column: string) =&gt; {
           <h2>9. Add Filter</h2>
           <p>Filter by published. Similar flow.</p>
 
-          <!-- 9.1 Add Filter Scope Trait -->
-          <div class="card">
-            <div class="card-header">9.1 Add Filter Scope Trait</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Traits/Scopes/FilterScope.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="filterTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="filter-model-tab" data-bs-toggle="tab" data-bs-target="#filter-model" type="button" role="tab" aria-controls="filter-model" aria-selected="true">9.1 Filter Scope Trait</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="filter-service-tab" data-bs-toggle="tab" data-bs-target="#filter-service" type="button" role="tab" aria-controls="filter-service" aria-selected="false">9.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="filter-index-tab" data-bs-toggle="tab" data-bs-target="#filter-index" type="button" role="tab" aria-controls="filter-index" aria-selected="false">9.3 Index Page</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="filterTabContent">
+            <!-- 9.1 Add Filter Scope Trait -->
+            <div class="tab-pane fade show active" id="filter-model" role="tabpanel" aria-labelledby="filter-model-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Models/Traits/Scopes/FilterScope.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Models\Traits\Scopes;
 
@@ -1551,33 +1721,35 @@ trait FilterScope
         return $query-&gt;where('is_published', $published === 'true');
     }
 }</code></pre>
-              <div class="file-path">app/Models/Post.php</div>
-              <pre><code class="language-php">// Add use App\Models\Traits\Scopes\FilterScope;
+                  <div class="file-path">app/Models/Post.php</div>
+                  <pre><code class="language-php">// Add use App\Models\Traits\Scopes\FilterScope;
 
 // In use: ... , SortScope, FilterScope;</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 9.2 Updated Service with Filter -->
-          <div class="card">
-            <div class="card-header">9.2 Updated Service with Filter</div>
-            <div class="card-body">
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// In getPostList filters add 'published' =&gt; $request-&gt;input('published')
+            <!-- 9.2 Updated Service with Filter -->
+            <div class="tab-pane fade" id="filter-service" role="tabpanel" aria-labelledby="filter-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// In getPostList filters add 'published' =&gt; $request-&gt;input('published')
 
 // After sort
 if (!is_null($filters['published']) &amp;&amp; $filters['published'] !== '') {
     $query = $query-&gt;published($filters['published']);
 }</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 9.3 Updated Index with Filter -->
-          <div class="card">
-            <div class="card-header">9.3 Updated Index with Filter</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
-              <pre><code class="language-tsx">// Add import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+            <!-- 9.3 Updated Index with Filter -->
+            <div class="tab-pane fade" id="filter-index" role="tabpanel" aria-labelledby="filter-index-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+                  <pre><code class="language-tsx">// Add import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // In component
 const [publishedFilter, setPublishedFilter] = useState(filters.published || '');
@@ -1601,8 +1773,10 @@ const handleFilter = () =&gt; {
   &lt;/Select&gt;
   &lt;Button onClick={handleFilter} className="ml-2"&gt;Filter&lt;/Button&gt;
 &lt;/div&gt;</code></pre>
-              <p class="alert alert-primary">Select triggers filter, preserves others.</p>
-              <p class="alert alert-success">Test filter—list shows only selected status.</p>
+                  <p class="alert alert-primary">Select triggers filter, preserves others.</p>
+                  <p class="alert alert-success">Test filter—list shows only selected status.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1612,12 +1786,27 @@ const handleFilter = () =&gt; {
           <h2>10. Add Pagination</h2>
           <p>Server-side pagination. Update to paginate, add frontend controls.</p>
 
-          <!-- 10.1 Add Pagination Scope Trait -->
-          <div class="card">
-            <div class="card-header">10.1 Add Pagination Scope Trait</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Traits/Scopes/PaginationScope.php</div>
-              <pre><code class="language-php">&lt;?php
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="paginationTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="pagination-model-tab" data-bs-toggle="tab" data-bs-target="#pagination-model" type="button" role="tab" aria-controls="pagination-model" aria-selected="true">10.1 Pagination Scope Trait</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pagination-service-tab" data-bs-toggle="tab" data-bs-target="#pagination-service" type="button" role="tab" aria-controls="pagination-service" aria-selected="false">10.2 Service</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pagination-index-tab" data-bs-toggle="tab" data-bs-target="#pagination-index" type="button" role="tab" aria-controls="pagination-index" aria-selected="false">10.3 Index Page</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="paginationTabContent">
+            <!-- 10.1 Add Pagination Scope Trait -->
+            <div class="tab-pane fade show active" id="pagination-model" role="tabpanel" aria-labelledby="pagination-model-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Models/Traits/Scopes/PaginationScope.php</div>
+                  <pre><code class="language-php">&lt;?php
 
 namespace App\Models\Traits\Scopes;
 
@@ -1631,30 +1820,32 @@ trait PaginationScope
         return $query-&gt;paginate($perPage, ['*'], 'page', $page);
     }
 }</code></pre>
-              <div class="file-path">app/Models/Post.php</div>
-              <pre><code class="language-php">// Add use App\Models\Traits\Scopes\PaginationScope;
+                  <div class="file-path">app/Models/Post.php</div>
+                  <pre><code class="language-php">// Add use App\Models\Traits\Scopes\PaginationScope;
 
 // In use: ... , FilterScope, PaginationScope;</code></pre>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 10.2 Updated Service with Pagination -->
-          <div class="card">
-            <div class="card-header">10.2 Updated Service with Pagination</div>
-            <div class="card-body">
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">// In getPostList, replace get() with
+            <!-- 10.2 Updated Service with Pagination -->
+            <div class="tab-pane fade" id="pagination-service" role="tabpanel" aria-labelledby="pagination-service-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">// In getPostList, replace get() with
 return $query-&gt;paginateResults($filters['per_page'], $request-&gt;input('page', 1));</code></pre>
-              <p class="alert alert-primary">Paginator object has data, current_page, etc. Use $result->data in Index.</p>
+                  <p class="alert alert-primary">Paginator object has data, current_page, etc. Use $result->data in Index.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 10.3 Updated Index with Pagination -->
-          <div class="card">
-            <div class="card-header">10.3 Updated Index with Pagination</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
-              <pre><code class="language-tsx">// Update props: posts: { data: Post[], current_page: number, last_page: number, ... }
+            <!-- 10.3 Updated Index with Pagination -->
+            <div class="tab-pane fade" id="pagination-index" role="tabpanel" aria-labelledby="pagination-index-tab">
+              <div class="card">
+                <div class="card-body">
+                  <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+                  <pre><code class="language-tsx">// Update props: posts: { data: Post[], current_page: number, last_page: number, ... }
 
 // In map: {posts.data.map((post) =&gt; ... }
 
@@ -1680,8 +1871,10 @@ const handlePageChange = (page: number) =&gt; {
     Next
   &lt;/Button&gt;
 &lt;/div&gt;</code></pre>
-              <p class="alert alert-primary">posts.data for list. Buttons update page param.</p>
-              <p class="alert alert-success">Test pagination—navigate pages with 10/post.</p>
+                  <p class="alert alert-primary">posts.data for list. Buttons update page param.</p>
+                  <p class="alert alert-success">Test pagination—navigate pages with 10/post.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1891,20 +2084,33 @@ const total = useMemo(() =&gt; data.price + (data.price * (data.tax || 0.1)), [d
         <section id="advanced" class="section-header">
           <h2>17. Advanced Features</h2>
 
-          <div class="card">
-            <div class="card-header">17.1 Restore/Force Delete</div>
-            <div class="card-body">
-              <p>Add routes for trashed posts.</p>
-              <div class="file-path">routes/web.php</div>
-              <pre><code class="language-php">Route::resource('posts', PostController::class)-&gt;withTrashed();
+          <!-- Nav tabs -->
+          <ul class="nav nav-pills mb-3" id="advancedTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="advanced-restore-tab" data-bs-toggle="tab" data-bs-target="#advanced-restore" type="button" role="tab" aria-controls="advanced-restore" aria-selected="true">17.1 Restore/Force Delete</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="advanced-cache-tab" data-bs-toggle="tab" data-bs-target="#advanced-cache" type="button" role="tab" aria-controls="advanced-cache" aria-selected="false">17.2 Caching</button>
+            </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" id="advancedTabContent">
+            <!-- 17.1 Restore/Force Delete -->
+            <div class="tab-pane fade show active" id="advanced-restore" role="tabpanel" aria-labelledby="advanced-restore-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Add routes for trashed posts.</p>
+                  <div class="file-path">routes/web.php</div>
+                  <pre><code class="language-php">Route::resource('posts', PostController::class)-&gt;withTrashed();
 
 // Or specific
 Route::post('/posts/{post}/restore', [PostController::class, 'restore'])-&gt;name('post.restore');
 Route::delete('/posts/{post}/force-delete', [PostController::class, 'forceDelete'])-&gt;name('post.force-delete');</code></pre>
 
-              <p>Update controller.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php</div>
-              <pre><code class="language-php">public function restore(Post $post)
+                  <p>Update controller.</p>
+                  <div class="file-path">app/Http/Controllers/PostController.php</div>
+                  <pre><code class="language-php">public function restore(Post $post)
 {
     try {
         $post-&gt;restore();
@@ -1929,16 +2135,18 @@ public function forceDelete(Post $post)
 
 // In index, to include trashed: $result = $this-&gt;postService-&gt;getPostList($request)-&gt;withTrashed();</code></pre>
 
-              <p class="alert alert-success">Test—delete, then add filter for trashed, restore/force delete.</p>
+                  <p class="alert alert-success">Test—delete, then add filter for trashed, restore/force delete.</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div class="card">
-            <div class="card-header">17.2 Caching</div>
-            <div class="card-body">
-              <p>Update service getPostList with cache. Add <code>use Illuminate\Support\Facades\Cache;</code></p>
-              <div class="file-path">app/Services/PostService.php</div>
-              <pre><code class="language-php">public function getPostList(Request $request)
+            <!-- 17.2 Caching -->
+            <div class="tab-pane fade" id="advanced-cache" role="tabpanel" aria-labelledby="advanced-cache-tab">
+              <div class="card">
+                <div class="card-body">
+                  <p>Update service getPostList with cache. Add <code>use Illuminate\Support\Facades\Cache;</code></p>
+                  <div class="file-path">app/Services/PostService.php</div>
+                  <pre><code class="language-php">public function getPostList(Request $request)
 {
     // ... build $query and $filters
 
@@ -1947,8 +2155,10 @@ public function forceDelete(Post $post)
         return $query-&gt;paginateResults($filters['per_page'], $request-&gt;input('page', 1));
     });
 }</code></pre>
-              <p>Cache invalidates on CRUD via flush() in controller.</p>
-              <p class="alert alert-success">Test—faster loads after first request.</p>
+                  <p>Cache invalidates on CRUD via flush() in controller.</p>
+                  <p class="alert alert-success">Test—faster loads after first request.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
