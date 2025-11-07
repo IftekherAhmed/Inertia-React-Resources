@@ -313,14 +313,17 @@
             <div class="card-body">
               <p>Create the migration for posts table with basic fields.</p>
               <div class="command">php artisan make:migration create_posts_table</div>
-              <div class="file-path">database/migrations/xxxx_create_posts_table.php</div>
+              <div class="file-path">database/migrations/xxxx_xx_xx_xxxxxx_create_posts_table.php</div>
               <pre><code class="language-php">&lt;?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('posts', function (Blueprint $table) {
             $table-&gt;id();
             $table-&gt;string('title');
@@ -331,8 +334,9 @@ return new class extends Migration {
             $table-&gt;softDeletes();
         });
     }
-    
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::dropIfExists('posts');
     }
 };</code></pre>
@@ -349,17 +353,23 @@ return new class extends Migration {
               <div class="command">php artisan make:factory PostFactory</div>
               <div class="file-path">database/factories/PostFactory.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace Database\Factories;
 
+use App\Models\Post;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class PostFactory extends Factory {
-    public function definition(): array {
+class PostFactory extends Factory
+{
+    protected $model = Post::class;
+
+    public function definition(): array
+    {
         return [
-            'title' =&gt; fake()-&gt;sentence(6),
-            'description' =&gt; fake()-&gt;paragraph(4),
-            'image' =&gt; 'posts/'.fake()-&gt;uuid().'.jpg',
-            'is_published' =&gt; fake()-&gt;boolean(70),
+            'title' =&gt; $this-&gt;faker-&gt;sentence(6),
+            'description' =&gt; $this-&gt;faker-&gt;paragraph(4),
+            'image' =&gt; 'posts/' . $this-&gt;faker-&gt;uuid . '.jpg',
+            'is_published' =&gt; $this-&gt;faker-&gt;boolean(70),
         ];
     }
 }</code></pre>
@@ -375,6 +385,7 @@ class PostFactory extends Factory {
               <div class="command">php artisan make:model Post</div>
               <div class="file-path">app/Models/Post.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -382,17 +393,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class Post extends Model {
+class Post extends Model
+{
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['title', 'description', 'image', 'is_published'];
-    protected $casts = ['is_published' =&gt; 'boolean'];
-    
-    public function getImageUrlAttribute() {
-        if ($this-&gt;image) {
-            return Storage::url($this-&gt;image);
-        }
-        return null;
+
+    protected $casts = [
+        'is_published' =&gt; 'boolean',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this-&gt;image ? Storage::url($this-&gt;image) : null;
     }
 }</code></pre>
               <p class="alert alert-success">Model ready. Accessor for image URL is like a computed property.</p>
@@ -407,13 +420,16 @@ class Post extends Model {
               <div class="command">php artisan make:seeder PostSeeder</div>
               <div class="file-path">database/seeders/PostSeeder.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace Database\Seeders;
 
 use App\Models\Post;
 use Illuminate\Database\Seeder;
 
-class PostSeeder extends Seeder {
-    public function run(): void {
+class PostSeeder extends Seeder
+{
+    public function run(): void
+    {
         Post::factory(100)-&gt;create();
     }
 }</code></pre>
@@ -429,14 +445,26 @@ class PostSeeder extends Seeder {
               <p>Create the service with getPostList method. This handles querying the model, keeping the controller clean.</p>
               <div class="file-path">app/Services/PostService.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Services;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
 
-class PostService {
-    public function getPostList(Request $request) {
+class PostService
+{
+    public function getPostList(Request $request)
+    {
         return Post::all();
+    }
+    
+    public function getPostById($id)
+    {
+        try {
+            return Post::findOrFail($id);
+        } catch (\Exception $e) {
+            throw new \Exception('Post not found: ' . $e-&gt;getMessage());
+        }
     }
 }</code></pre>
               <p class="alert alert-primary">Beginner tip: Services encapsulate logic. Here, getPostList is simple now but will grow with filters later. It's like a method in a Laravel repository.</p>
@@ -451,21 +479,24 @@ class PostService {
               <div class="command">php artisan make:controller PostController</div>
               <div class="file-path">app/Http/Controllers/PostController.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Services\PostService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class PostController extends Controller {
+class PostController extends Controller
+{
     protected $postService;
 
-    public function __construct(PostService $postService) {
+    public function __construct(PostService $postService)
+    {
         $this-&gt;postService = $postService;
     }
 
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $result = $this-&gt;postService-&gt;getPostList($request);
         return Inertia::render('Post/Index', ['posts' =&gt; $result]);
     }
@@ -482,6 +513,7 @@ class PostController extends Controller {
               <p>Add resource routes. More added later.</p>
               <div class="file-path">routes/web.php</div>
               <pre><code class="language-php">&lt;?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 
@@ -507,9 +539,17 @@ Route::resource('posts', PostController::class);</code></pre>
               <p>Create directory resources/js/pages/Post if needed. This is the React component for listing, like a Blade view.</p>
               <div class="file-path">resources/js/pages/Post/Index.tsx</div>
               <pre><code class="language-tsx">import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout'; // Created in section 21
+import React, { useState } from 'react';
+import AppLayout from '@/layouts/app-layout';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { Badge } from '@/components/ui/badge';
+
+import { Eye } from 'lucide-react';
+
+import PostModal from './PostModal';
 
 interface Post {
   id: number;
@@ -517,13 +557,35 @@ interface Post {
   description: string | null;
   image_url?: string | null;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 interface IndexProps {
   posts: Post[];
+  filters?: {
+    search?: string;
+    sort_by?: string;
+    sort_direction?: string;
+    published?: string;
+    per_page?: number;
+  };
 }
 
-export default function Index({ posts }: IndexProps) {
+export default function Index({ posts, filters = {} }: IndexProps) {
+  const [selectedPost, setSelectedPost] = useState&lt;Post | null&gt;(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = (post: Post) =&gt; {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () =&gt; {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
   return (
     &lt;AppLayout&gt;
       &lt;Head title="Posts" /&gt;
@@ -531,7 +593,7 @@ export default function Index({ posts }: IndexProps) {
       &lt;div className="flex justify-between items-center mb-6"&gt;
         &lt;h1 className="text-2xl font-bold"&gt;Posts&lt;/h1&gt;
         &lt;Button asChild&gt;
-          &lt;Link href={route('post.create')}&gt;Create Post&lt;/Link&gt;
+          &lt;Link href="/posts/create"&gt;Create Post&lt;/Link&gt;
         &lt;/Button&gt;
       &lt;/div&gt;
 
@@ -544,19 +606,41 @@ export default function Index({ posts }: IndexProps) {
             &lt;table className="min-w-full divide-y divide-gray-200"&gt;
               &lt;thead className="bg-gray-50"&gt;
                 &lt;tr&gt;
-                  &lt;th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;ID&lt;/th&gt;
-                  &lt;th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;Title&lt;/th&gt;
-                  &lt;th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;Actions&lt;/th&gt;
+                  &lt;th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;ID&lt;/th&gt;
+                  &lt;th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;Title&lt;/th&gt;
+                  &lt;th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;Status&lt;/th&gt;
+                  &lt;th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"&gt;Actions&lt;/th&gt;
                 &lt;/tr&gt;
               &lt;/thead&gt;
               &lt;tbody className="bg-white divide-y divide-gray-200"&gt;
                 {posts.map((post) =&gt; (
-                  &lt;tr key={post.id}&gt;
-                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"&gt;{post.id}&lt;/td&gt;
-                    &lt;td className="px-6 py-4 text-sm font-medium text-gray-900"&gt;{post.title}&lt;/td&gt;
-                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm font-medium"&gt;
-                      &lt;Button variant="outline" size="sm" asChild&gt;
-                        &lt;Link href={route('post.edit', post.id)}&gt;Edit&lt;/Link&gt;
+                  &lt;tr key={post.id} className="hover:bg-gray-50"&gt;
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"&gt;{post.id}&lt;/td&gt;
+                    &lt;td className="px-6 py-4 text-sm text-gray-900"&gt;{post.title}&lt;/td&gt;
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-sm"&gt;
+                      &lt;span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        post.is_published 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}&gt;
+                        {post.is_published ? 'Published' : 'Draft'}
+                      &lt;/span&gt;
+                    &lt;/td&gt;
+                    &lt;td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"&gt;
+                      &lt;Button variant="outline" size="sm" onClick={() =&gt; openModal(post)} className="mr-2"&gt;
+                        View
+                      &lt;/Button&gt;
+                      &lt;Button variant="outline" size="sm" asChild className="mr-2"&gt;
+                        &lt;Link href={`/posts/${post.id}/edit`}&gt;Edit&lt;/Link&gt;
+                      &lt;/Button&gt;
+                      &lt;Button variant="destructive" size="sm" asChild&gt;
+                        &lt;Link 
+                          href={`/posts/${post.id}`}
+                          method="delete" 
+                          onClick={(e) =&gt; {
+                            if (!confirm('Are you sure you want to delete this post?')) e.preventDefault();
+                          }}
+                        &gt;Delete&lt;/Link&gt;
                       &lt;/Button&gt;
                     &lt;/td&gt;
                   &lt;/tr&gt;
@@ -566,6 +650,8 @@ export default function Index({ posts }: IndexProps) {
           &lt;/div&gt;
         &lt;/CardContent&gt;
       &lt;/Card&gt;
+
+      &lt;PostModal post={selectedPost} isOpen={isModalOpen} onClose={closeModal} /&gt;
     &lt;/AppLayout&gt;
   );
 }</code></pre>
@@ -582,47 +668,56 @@ export default function Index({ posts }: IndexProps) {
 
           <!-- 3.1 Controller for Create and Store -->
           <div class="card">
-            <div class="card-header">3.1 Controller for Create and Store (Initial with Inline Validation)</div>
+            <div class="card-header">3.1 Controller for Create and Store</div>
             <div class="card-body">
-              <p>Update the controller to add create and store. Use inline validation for now—we'll refactor to form request next.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
+              <p>Update the controller to add create and store. Use form request for validation.</p>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Post;
+use App\Http\Requests\PostRequest;
 use App\Services\PostService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
-class PostController extends Controller {
+class PostController extends Controller
+{
     protected $postService;
 
-    public function __construct(PostService $postService) {
+    public function __construct(PostService $postService)
+    {
         $this-&gt;postService = $postService;
     }
 
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $result = $this-&gt;postService-&gt;getPostList($request);
-        return Inertia::render('Post/Index', ['posts' =&gt; $result]);
+        return Inertia::render('Post/Index', [
+            'posts' =&gt; $result,
+            'filters' =&gt; $request-&gt;only(['search', 'sort_by', 'sort_direction', 'published', 'per_page']),
+        ]);
     }
     
     public function create() { 
         return Inertia::render('Post/Create'); 
     }
     
-    public function store(Request $request) {
-        $validated = $request-&gt;validate([
-            'title' =&gt; 'required|string|max:255|unique:posts,title',
-            'description' =&gt; 'nullable|string|max:1000',
-            'image' =&gt; 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_published' =&gt; 'boolean',
-        ]);
-        if ($request-&gt;hasFile('image')) {
-            $validated['image'] = $request-&gt;file('image')-&gt;store('posts', 'public');
+    public function store(PostRequest $request)
+    {
+        try {
+            $data = $request-&gt;validated();
+            if ($request-&gt;hasFile('image')) {
+                $data['image'] = $request-&gt;file('image')-&gt;store('posts', 'public');
+            }
+            $this-&gt;postService-&gt;createPost($data);
+            Cache::flush(); // Invalidate cache on create
+            return redirect()-&gt;route('post.index')-&gt;with('success', 'Post created successfully.');
+        } catch (\Exception $e) {
+            return back()-&gt;with('error', $e-&gt;getMessage());
         }
-        $this-&gt;postService-&gt;createPost($validated);
-        return redirect()-&gt;route('post.index')-&gt;with('success', 'Post created successfully.');
     }
 }</code></pre>
               <p class="alert alert-primary">Beginner tip: create() just renders the form (like get route). store() validates input, handles file upload (using Laravel Storage), calls service to create, and redirects with flash message (Inertia handles sessions like Laravel).</p>
@@ -637,13 +732,16 @@ class PostController extends Controller {
               <div class="command">php artisan make:request PostRequest</div>
               <div class="file-path">app/Http/Requests/PostRequest.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class PostRequest extends FormRequest {
-    public function rules(): array {
+class PostRequest extends FormRequest
+{
+    public function rules(): array
+    {
         $rules = [
             'title' =&gt; 'required|string|max:255',
             'description' =&gt; 'nullable|string|max:1000',
@@ -654,13 +752,14 @@ class PostRequest extends FormRequest {
         if ($this-&gt;isMethod('post')) {
             $rules['title'] .= '|unique:posts,title';
         } else {
-            $rules['title'] = ['required', 'string', 'max:255', Rule::unique('posts')-&gt;ignore($this-&gt;post)];
+            $rules['title'] = ['required', 'string', 'max:255', Rule::unique('posts')-&gt;ignore($this-&gt;route('post'))];
         }
         
         return $rules;
     }
     
-    public function messages(): array {
+    public function messages(): array
+    {
         return [
             'title.required' =&gt; 'A title is required',
             'title.unique' =&gt; 'This title has already been taken',
@@ -674,48 +773,42 @@ class PostRequest extends FormRequest {
             </div>
           </div>
 
-          <!-- 3.3 Updated Controller with Form Request -->
-          <div class="card">
-            <div class="card-header">3.3 Updated Controller with Form Request for Store</div>
-            <div class="card-body">
-              <p>Replace Request with PostRequest in store, remove inline validation.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// ... existing index and constructor ...
-
-use App\Http\Requests\PostRequest;
-
-// Update store
-public function store(PostRequest $request) {
-    try {
-        $data = $request-&gt;validated();
-        if ($request-&gt;hasFile('image')) {
-            $data['image'] = $request-&gt;file('image')-&gt;store('posts', 'public');
-        }
-        $this-&gt;postService-&gt;createPost($data);
-        return redirect()-&gt;route('post.index')-&gt;with('success', 'Post created successfully.');
-    } catch (\Exception $e) {
-        return back()-&gt;with('error', $e-&gt;getMessage());
-    }
-}
-
-// ... add create as above</code></pre>
-              <p class="alert alert-primary">Beginner tip: Injecting PostRequest auto-validates. validated() gets clean data. Try-catch for service errors.</p>
-            </div>
-          </div>
-
           <!-- 3.4 Service for Create and Store -->
           <div class="card">
             <div class="card-header">3.4 Service for Create and Store</div>
             <div class="card-body">
               <p>Update service to add createPost method.</p>
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
-              <pre><code class="language-php">// ... existing getPostList ...
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">&lt;?php
 
-public function createPost(array $data) {
-    try {
-        return Post::create($data);
-    } catch (\Exception $e) {
-        throw new \Exception('Failed to create post: ' . $e-&gt;getMessage());
+namespace App\Services;
+
+use App\Models\Post;
+use Illuminate\Http\Request;
+
+class PostService
+{
+    public function getPostList(Request $request)
+    {
+        return Post::all();
+    }
+    
+    public function getPostById($id)
+    {
+        try {
+            return Post::findOrFail($id);
+        } catch (\Exception $e) {
+            throw new \Exception('Post not found: ' . $e-&gt;getMessage());
+        }
+    }
+
+    public function createPost(array $data)
+    {
+        try {
+            return Post::create($data);
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to create post: ' . $e-&gt;getMessage());
+        }
     }
 }</code></pre>
               <p class="alert alert-primary">Beginner tip: Service wraps model create with error handling, like a Laravel action.</p>
@@ -729,6 +822,7 @@ public function createPost(array $data) {
               <div class="file-path">resources/js/pages/Post/Create.tsx</div>
               <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -740,65 +834,105 @@ export default function Create() {
   const { data, setData, post, processing, errors } = useForm({
     title: '',
     description: '',
-    image: null,
+    image: null as File | null,
     is_published: false,
   });
 
+  const [preview, setPreview] = useState&lt;string | null&gt;(null);
+
+  const handleImageChange = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+    const file = e.target.files?.[0] || null;
+    setData('image', file);
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setPreview(null);
+    }
+  };
+
   const submit = (e: React.FormEvent) =&gt; {
     e.preventDefault();
-    post(route('post.store'));
+    post('/posts');
   };
 
   return (
     &lt;AppLayout&gt;
       &lt;Head title="Create Post" /&gt;
-      
+
       &lt;div className="flex justify-between items-center mb-6"&gt;
         &lt;h1 className="text-2xl font-bold"&gt;Create Post&lt;/h1&gt;
-        &lt;Button variant="outline" asChild&gt;
-          &lt;Link href={route('post.index')}&gt;Back to Posts&lt;/Link&gt;
+        &lt;Button asChild&gt;
+          &lt;Link href="/posts"&gt;Back to Posts&lt;/Link&gt;
         &lt;/Button&gt;
       &lt;/div&gt;
 
-      &lt;Card&gt;
-        &lt;form onSubmit={submit}&gt;
+      &lt;form onSubmit={submit}&gt;
+        &lt;Card&gt;
           &lt;CardHeader&gt;
-            &lt;CardTitle&gt;New Post&lt;/CardTitle&gt;
+            &lt;CardTitle&gt;Create Post&lt;/CardTitle&gt;
           &lt;/CardHeader&gt;
-          &lt;CardContent className="space-y-4"&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="title"&gt;Title&lt;/Label&gt;
-              &lt;Input id="title" value={data.title} onChange={(e) =&gt; setData('title', e.target.value)} required /&gt;
-              {errors.title &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.title}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="description"&gt;Description&lt;/Label&gt;
-              &lt;Textarea id="description" value={data.description} onChange={(e) =&gt; setData('description', e.target.value)} rows={4} /&gt;
-              {errors.description &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.description}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="image"&gt;Image&lt;/Label&gt;
-              &lt;Input id="image" type="file" onChange={(e) =&gt; setData('image', e.target.files ? e.target.files[0] : null)} /&gt;
-              {errors.image &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.image}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div className="flex items-center space-x-2"&gt;
-              &lt;Switch id="is_published" checked={data.is_published} onCheckedChange={(checked) =&gt; setData('is_published', checked)} /&gt;
-              &lt;Label htmlFor="is_published"&gt;Published&lt;/Label&gt;
+          &lt;CardContent&gt;
+            &lt;div className="space-y-4"&gt;
+              &lt;div&gt;
+                &lt;Label&gt;Title&lt;/Label&gt;
+                &lt;Input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) =&gt; setData('title', e.target.value)}
+                  className={errors.title ? 'border-red-500' : ''}
+                /&gt;
+                {errors.title &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.title}&lt;/p&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Description&lt;/Label&gt;
+                &lt;Textarea
+                  value={data.description}
+                  onChange={(e) =&gt; setData('description', e.target.value)}
+                  className={errors.description ? 'border-red-500' : ''}
+                /&gt;
+                {errors.description &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.description}&lt;/p&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Image&lt;/Label&gt;
+                &lt;Input
+                  type="file"
+                  onChange={handleImageChange}
+                  className={errors.image ? 'border-red-500' : ''}
+                  accept="image/*"
+                /&gt;
+                {errors.image &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.image}&lt;/p&gt;
+                )}
+                {preview &amp;&amp; (
+                  &lt;img src={preview} alt="Preview" className="mt-2 max-w-xs rounded border" /&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Published&lt;/Label&gt;
+                &lt;Switch
+                  checked={data.is_published}
+                  onCheckedChange={(value) =&gt; setData('is_published', !!value)}
+                /&gt;
+              &lt;/div&gt;
             &lt;/div&gt;
           &lt;/CardContent&gt;
-          &lt;CardFooter className="flex justify-between"&gt;
-            &lt;Button variant="outline" asChild&gt;
-              &lt;Link href={route('post.index')}&gt;Cancel&lt;/Link&gt;
-            &lt;/Button&gt;
-            &lt;Button type="submit" disabled={processing}&gt;{processing ? 'Creating...' : 'Create Post'}&lt;/Button&gt;
+          &lt;CardFooter&gt;
+            &lt;Button type="submit" disabled={processing}&gt;Create Post&lt;/Button&gt;
           &lt;/CardFooter&gt;
-        &lt;/form&gt;
-      &lt;/Card&gt;
+        &lt;/Card&gt;
+      &lt;/form&gt;
     &lt;/AppLayout&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">useForm: State management + submission. onChange updates data. Errors from Laravel show automatically.</p>
-              <p class="alert alert-success">Test create—form submits to store, redirects to index with new post.</p>
+              <p class="alert alert-primary">React explained: useForm handles form state and submission (like Livewire's $wire). Controlled inputs bind value/onChange. Preview uses URL.createObjectURL for client-side image preview.</p>
+              <p class="alert alert-success">Test create—visit /posts/create and submit form. See preview on upload.</p>
             </div>
           </div>
         </section>
@@ -806,75 +940,76 @@ export default function Create() {
         <!-- 4. EDIT PAGE -->
         <section id="edit" class="section-header">
           <h2>4. Edit Page</h2>
-          <p>To handle editing an existing post (edit and update actions), we need to write these codes: Update the controller with edit and update methods, use the existing form request for validation (it handles unique ignore for update), update the service with updatePost, then the React component. Similar to create, but loads existing data.</p>
+          <p>To handle editing a post (edit and update actions), we need to write these codes: Update the controller with edit and update methods, update the service with updatePost, then the React component. The edit method renders the form page, update handles submission (like a PATCH route in Laravel). Service handles the update logic.</p>
 
           <!-- 4.1 Controller for Edit and Update -->
           <div class="card">
             <div class="card-header">4.1 Controller for Edit and Update</div>
             <div class="card-body">
-              <p>Update controller to add edit and update, using PostRequest for validation.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// ... existing methods ...
+              <p>Update the controller to add edit and update.</p>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
+              <pre><code class="language-php">// ... existing index, create, store ...
 
-public function edit(Post $post) { 
-    return Inertia::render('Post/Edit', ['post' =&gt; $post]); 
+public function edit($id)
+{
+    $post = $this-&gt;postService-&gt;getPostById($id);
+    return Inertia::render('Post/Edit', ['post' =&gt; $post]);
 }
 
-public function update(PostRequest $request, Post $post) {
+public function update(PostRequest $request, $id)
+{
     try {
         $data = $request-&gt;validated();
         if ($request-&gt;hasFile('image')) {
-            if ($post-&gt;image) {
-                Storage::disk('public')-&gt;delete($post-&gt;image);
-            }
             $data['image'] = $request-&gt;file('image')-&gt;store('posts', 'public');
         }
-        $this-&gt;postService-&gt;updatePost($post, $data);
+        $this-&gt;postService-&gt;updatePost($id, $data);
+        Cache::flush(); // Invalidate cache on update
         return redirect()-&gt;route('post.index')-&gt;with('success', 'Post updated successfully.');
     } catch (\Exception $e) {
         return back()-&gt;with('error', $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: edit() passes the post model to React as props (model binding like in Laravel routes). update() validates with PostRequest (ignores unique for current ID), handles image replace, calls service.</p>
+              <p class="alert alert-primary">Beginner tip: edit() fetches post and renders form. update() validates, handles file (deletes old if new), calls service, redirects.</p>
             </div>
           </div>
 
-          <!-- 4.2 Form Request for Update -->
+          <!-- 4.2 Service for Edit and Update -->
           <div class="card">
-            <div class="card-header">4.2 Form Request for Update (Already Handles It)</div>
-            <div class="card-body">
-              <p>The existing PostRequest handles update by ignoring the current post ID in unique rule. No changes needed.</p>
-              <p class="alert alert-primary">Beginner tip: Rule::unique()-&gt;ignore($this-&gt;post) skips the current record, perfect for updates.</p>
-            </div>
-          </div>
-
-          <!-- 4.3 Service for Edit and Update -->
-          <div class="card">
-            <div class="card-header">4.3 Service for Edit and Update</div>
+            <div class="card-header">4.2 Service for Edit and Update</div>
             <div class="card-body">
               <p>Update service to add updatePost method.</p>
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
+              <div class="file-path">app/Services/PostService.php</div>
               <pre><code class="language-php">// ... existing methods ...
 
-public function updatePost(Post $post, array $data) {
+public function updatePost($id, array $data)
+{
     try {
+        $post = Post::findOrFail($id);
+
+        // Delete old image if new one uploaded
+        if (isset($data['image']) &amp;&amp; $post-&gt;image) {
+            Storage::disk('public')-&gt;delete($post-&gt;image);
+        }
+
         $post-&gt;update($data);
         return $post;
     } catch (\Exception $e) {
         throw new \Exception('Failed to update post: ' . $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Wraps model update with error handling.</p>
+              <p class="alert alert-primary">Beginner tip: Service wraps model update with error handling and image cleanup.</p>
             </div>
           </div>
 
-          <!-- 4.4 Initial Edit Page -->
+          <!-- 4.3 Initial Edit Page -->
           <div class="card">
-            <div class="card-header">4.4 Initial Edit Page (React Component)</div>
+            <div class="card-header">4.3 Initial Edit Page (React Component)</div>
             <div class="card-body">
               <div class="file-path">resources/js/pages/Post/Edit.tsx</div>
               <pre><code class="language-tsx">import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -882,81 +1017,125 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 
-interface Post {
-  id: number;
-  title: string;
-  description: string | null;
-  image_url?: string | null;
-  is_published: boolean;
-}
-
 interface EditProps {
-  post: Post;
+  post: {
+    id: number;
+    title: string;
+    description: string | null;
+    image_url?: string | null;
+    is_published: boolean;
+  };
 }
 
 export default function Edit({ post }: EditProps) {
-  const { data, setData, put, processing, errors } = useForm({
-    title: post.title || '',
+  const { data, setData, patch, processing, errors } = useForm({
+    title: post.title,
     description: post.description || '',
-    image: null,
+    image: null as File | null,
     is_published: post.is_published,
   });
 
+  const [preview, setPreview] = useState&lt;string | null&gt;(post.image_url || null);
+
+  useEffect(() =&gt; {
+    setData('title', post.title);
+    setData('description', post.description || '');
+    setData('is_published', post.is_published);
+  }, [post]);
+
+  const handleImageChange = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+    const file = e.target.files?.[0] || null;
+    setData('image', file);
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setPreview(post.image_url || null);
+    }
+  };
+
   const submit = (e: React.FormEvent) =&gt; {
     e.preventDefault();
-    put(route('post.update', post.id));
+    patch(`/posts/${post.id}`);
   };
 
   return (
     &lt;AppLayout&gt;
       &lt;Head title="Edit Post" /&gt;
-      
+
       &lt;div className="flex justify-between items-center mb-6"&gt;
         &lt;h1 className="text-2xl font-bold"&gt;Edit Post&lt;/h1&gt;
-        &lt;Button variant="outline" asChild&gt;
-          &lt;Link href={route('post.index')}&gt;Back to Posts&lt;/Link&gt;
+        &lt;Button asChild&gt;
+          &lt;Link href="/posts"&gt;Back to Posts&lt;/Link&gt;
         &lt;/Button&gt;
       &lt;/div&gt;
 
-      &lt;Card&gt;
-        &lt;form onSubmit={submit}&gt;
+      &lt;form onSubmit={submit}&gt;
+        &lt;Card&gt;
           &lt;CardHeader&gt;
             &lt;CardTitle&gt;Edit Post&lt;/CardTitle&gt;
           &lt;/CardHeader&gt;
-          &lt;CardContent className="space-y-4"&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="title"&gt;Title&lt;/Label&gt;
-              &lt;Input id="title" value={data.title} onChange={(e) =&gt; setData('title', e.target.value)} required /&gt;
-              {errors.title &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.title}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="description"&gt;Description&lt;/Label&gt;
-              &lt;Textarea id="description" value={data.description} onChange={(e) =&gt; setData('description', e.target.value)} rows={4} /&gt;
-              {errors.description &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.description}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div&gt;
-              &lt;Label htmlFor="image"&gt;Image (Current: {post.image_url ? 'Yes' : 'No'})&lt;/Label&gt;
-              &lt;Input id="image" type="file" onChange={(e) =&gt; setData('image', e.target.files ? e.target.files[0] : null)} /&gt;
-              {errors.image &amp;&amp; &lt;p className="text-red-500 text-sm mt-1"&gt;{errors.image}&lt;/p&gt;}
-            &lt;/div&gt;
-            &lt;div className="flex items-center space-x-2"&gt;
-              &lt;Switch id="is_published" checked={data.is_published} onCheckedChange={(checked) =&gt; setData('is_published', checked)} /&gt;
-              &lt;Label htmlFor="is_published"&gt;Published&lt;/Label&gt;
+          &lt;CardContent&gt;
+            &lt;div className="space-y-4"&gt;
+              &lt;div&gt;
+                &lt;Label&gt;Title&lt;/Label&gt;
+                &lt;Input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) =&gt; setData('title', e.target.value)}
+                  className={errors.title ? 'border-red-500' : ''}
+                /&gt;
+                {errors.title &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.title}&lt;/p&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Description&lt;/Label&gt;
+                &lt;Textarea
+                  value={data.description}
+                  onChange={(e) =&gt; setData('description', e.target.value)}
+                  className={errors.description ? 'border-red-500' : ''}
+                /&gt;
+                {errors.description &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.description}&lt;/p&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Image&lt;/Label&gt;
+                &lt;Input
+                  type="file"
+                  onChange={handleImageChange}
+                  className={errors.image ? 'border-red-500' : ''}
+                  accept="image/*"
+                /&gt;
+                {errors.image &amp;&amp; (
+                  &lt;p className="text-red-500 text-sm"&gt;{errors.image}&lt;/p&gt;
+                )}
+                {preview &amp;&amp; (
+                  &lt;img src={preview} alt="Preview" className="mt-2 max-w-xs rounded border" /&gt;
+                )}
+              &lt;/div&gt;
+
+              &lt;div&gt;
+                &lt;Label&gt;Published&lt;/Label&gt;
+                &lt;Switch
+                  checked={data.is_published}
+                  onCheckedChange={(value) =&gt; setData('is_published', !!value)}
+                /&gt;
+              &lt;/div&gt;
             &lt;/div&gt;
           &lt;/CardContent&gt;
-          &lt;CardFooter className="flex justify-between"&gt;
-            &lt;Button variant="outline" asChild&gt;
-              &lt;Link href={route('post.index')}&gt;Cancel&lt;/Link&gt;
-            &lt;/Button&gt;
-            &lt;Button type="submit" disabled={processing}&gt;{processing ? 'Updating...' : 'Update Post'}&lt;/Button&gt;
+          &lt;CardFooter&gt;
+            &lt;Button type="submit" disabled={processing}&gt;Update Post&lt;/Button&gt;
           &lt;/CardFooter&gt;
-        &lt;/form&gt;
-      &lt;/Card&gt;
+        &lt;/Card&gt;
+      &lt;/form&gt;
     &lt;/AppLayout&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">Pre-fills data from props. put sends PATCH request.</p>
-              <p class="alert alert-success">Test edit from index—updates save and redirect.</p>
+              <p class="alert alert-primary">React explained: useEffect syncs initial data (like mounted() in Livewire). Patch for updates.</p>
+              <p class="alert alert-success">Test edit—visit /posts/{id}/edit and submit form. Image preview updates.</p>
             </div>
           </div>
         </section>
@@ -964,21 +1143,22 @@ export default function Edit({ post }: EditProps) {
         <!-- 5. SHOW PAGE -->
         <section id="show" class="section-header">
           <h2>5. Show Page</h2>
-          <p>To display a single post (show action), we need to write these codes: Update the controller with show method, update the service with getPostById, then the React component. Add link from index. No form request needed since no input.</p>
+          <p>To handle viewing a post (show action), we need to write these codes: Update the controller with show method, update the service with getPostById, then the React component. The show method renders the page, service handles fetching the post. For better UX, we'll use a modal in Index instead of a separate page, but here's the full modal code as a separate component.</p>
 
           <!-- 5.1 Controller for Show -->
           <div class="card">
             <div class="card-header">5.1 Controller for Show</div>
             <div class="card-body">
-              <p>Update controller to add show.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
+              <p>Update the controller to add show (optional if using modal).</p>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
               <pre><code class="language-php">// ... existing methods ...
 
-public function show(Post $post) { 
-    $post = $this-&gt;postService-&gt;getPostById($post-&gt;id);
-    return Inertia::render('Post/Show', ['post' =&gt; $post]); 
+public function show($id)
+{
+    $post = $this-&gt;postService-&gt;getPostById($id);
+    return Inertia::render('Post/Show', ['post' =&gt; $post]);
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: Model binding injects the post. Service fetches it with error handling.</p>
+              <p class="alert alert-primary">Beginner tip: show() fetches post and renders page. Modal uses data from Index props—no extra call.</p>
             </div>
           </div>
 
@@ -986,31 +1166,34 @@ public function show(Post $post) {
           <div class="card">
             <div class="card-header">5.2 Service for Show</div>
             <div class="card-body">
-              <p>Update service to add getPostById.</p>
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
+              <p>Update service to ensure getPostById is defined.</p>
+              <div class="file-path">app/Services/PostService.php</div>
               <pre><code class="language-php">// ... existing methods ...
 
-public function getPostById($id) {
+public function getPostById($id)
+{
     try {
         return Post::findOrFail($id);
     } catch (\Exception $e) {
         throw new \Exception('Post not found: ' . $e-&gt;getMessage());
     }
 }</code></pre>
-              <p class="alert alert-primary">Beginner tip: findOrFail throws 404 if not found.</p>
+              <p class="alert alert-primary">Beginner tip: Wraps model find with error handling.</p>
             </div>
           </div>
 
-          <!-- 5.3 Initial Show Page -->
+          <!-- 5.3 Show Modal Component -->
           <div class="card">
-            <div class="card-header">5.3 Initial Show Page (React Component)</div>
+            <div class="card-header">5.3 Show Modal Component (Separate File)</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Show.tsx</div>
-              <pre><code class="language-tsx">import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+              <p>Create this separate component for reusability, like a Blade partial.</p>
+              <div class="file-path">resources/js/pages/Post/PostModal.tsx</div>
+              <pre><code class="language-tsx">import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Link } from '@inertiajs/react';
+import { Eye, Calendar } from 'lucide-react';
 
 interface Post {
   id: number;
@@ -1018,76 +1201,95 @@ interface Post {
   description: string | null;
   image_url?: string | null;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-interface ShowProps {
-  post: Post;
+interface PostModalProps {
+  post: Post | null;
+  isOpen: boolean;
+  onClose: () =&gt; void;
 }
 
-export default function Show({ post }: ShowProps) {
+export default function PostModal({ post, isOpen, onClose }: PostModalProps) {
+  if (!post) return null;
+
   return (
-    &lt;AppLayout&gt;
-      &lt;Head title={post.title} /&gt;
-      
-      &lt;div className="flex justify-between items-center mb-6"&gt;
-        &lt;h1 className="text-2xl font-bold"&gt;View Post&lt;/h1&gt;
-        &lt;Button variant="outline" asChild&gt;
-          &lt;Link href={route('post.index')}&gt;Back to Posts&lt;/Link&gt;
-        &lt;/Button&gt;
-      &lt;/div&gt;
+    &lt;Dialog open={isOpen} onOpenChange={onClose}&gt;
+      &lt;DialogContent className="md:max-w-3xl overflow-y-auto max-h-[90vh]"&gt;
+        &lt;DialogHeader&gt;
+          &lt;DialogTitle className="flex items-center gap-2"&gt;
+            &lt;Eye className="h-5 w-5" /&gt;
+            Post Details
+          &lt;/DialogTitle&gt;
+          &lt;DialogDescription&gt;View comprehensive information about the post.&lt;/DialogDescription&gt;
+        &lt;/DialogHeader&gt;
+        
+        &lt;div className="space-y-6"&gt;
+          {/* Post Header Card */}
+          &lt;Card className="border-l-4 border-l-blue-500"&gt;
+            &lt;CardContent className="pt-2"&gt;
+              &lt;div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"&gt;
+                &lt;div className="space-y-2"&gt;
+                  &lt;h2 className="text-xl font-semibold flex items-center gap-2"&gt;
+                    &lt;Eye className="h-5 w-5" /&gt;
+                    {post.title}
+                  &lt;/h2&gt;
+                  &lt;div className="flex items-center gap-2"&gt;
+                    &lt;Badge variant={post.is_published ? "default" : "secondary"}&gt;
+                      {post.is_published ? 'Published' : 'Draft'}
+                    &lt;/Badge&gt;
+                    &lt;span className="text-sm text-muted-foreground"&gt;
+                      Created: {new Date(post.created_at).toLocaleDateString()}
+                    &lt;/span&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/CardContent&gt;
+          &lt;/Card&gt;
 
-      &lt;Card&gt;
-        &lt;CardHeader&gt;
-          &lt;CardTitle&gt;{post.title}&lt;/CardTitle&gt;
-          &lt;Badge variant={post.is_published ? 'success' : 'secondary'}&gt;{post.is_published ? 'Published' : 'Draft'}&lt;/Badge&gt;
-        &lt;/CardHeader&gt;
-        &lt;CardContent className="space-y-4"&gt;
-          &lt;div&gt;
-            &lt;h3 className="text-lg font-semibold mb-2"&gt;Description&lt;/h3&gt;
-            &lt;p className="text-gray-700"&gt;{post.description || 'No description.'}&lt;/p&gt;
-          &lt;/div&gt;
-          {post.image_url &amp;&amp; (
-            &lt;div&gt;
-              &lt;h3 className="text-lg font-semibold mb-2"&gt;Image&lt;/h3&gt;
-              &lt;img src={post.image_url} alt="Post image" className="max-w-full h-auto rounded" /&gt;
-            &lt;/div&gt;
-          )}
-        &lt;/CardContent&gt;
-        &lt;CardFooter className="flex justify-between"&gt;
-          &lt;Button variant="outline" asChild&gt;
-            &lt;Link href={route('post.index')}&gt;Back&lt;/Link&gt;
-          &lt;/Button&gt;
+          {/* Post Content */}
+          &lt;Card&gt;
+            &lt;CardHeader&gt;
+              &lt;CardTitle className="flex items-center gap-2"&gt;
+                &lt;Calendar className="h-5 w-5" /&gt;
+                Post Content
+              &lt;/CardTitle&gt;
+            &lt;/CardHeader&gt;
+            &lt;CardContent&gt;
+              &lt;div className="space-y-4"&gt;
+                &lt;div&gt;
+                  &lt;h3 className="text-sm font-medium text-muted-foreground mb-1"&gt;Description&lt;/h3&gt;
+                  &lt;p className="text-sm"&gt;{post.description || 'No description provided.'}&lt;/p&gt;
+                &lt;/div&gt;
+                
+                {post.image_url &amp;&amp; (
+                  &lt;div&gt;
+                    &lt;h3 className="text-sm font-medium text-muted-foreground mb-1"&gt;Image&lt;/h3&gt;
+                    &lt;img 
+                      src={post.image_url} 
+                      alt="Post image" 
+                      className="max-w-full h-auto rounded-md border"
+                    /&gt;
+                  &lt;/div&gt;
+                )}
+              &lt;/div&gt;
+            &lt;/CardContent&gt;
+          &lt;/Card&gt;
+        &lt;/div&gt;
+        
+        &lt;DialogFooter&gt;
+          &lt;Button variant="outline" onClick={onClose}&gt;Close&lt;/Button&gt;
           &lt;Button asChild&gt;
-            &lt;Link href={route('post.edit', post.id)}&gt;Edit&lt;/Link&gt;
+            &lt;Link href={`/posts/${post.id}/edit`}&gt;Edit Post&lt;/Link&gt;
           &lt;/Button&gt;
-        &lt;/CardFooter&gt;
-      &lt;/Card&gt;
-    &lt;/AppLayout&gt;
+        &lt;/DialogFooter&gt;
+      &lt;/DialogContent&gt;
+    &lt;/Dialog&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">Conditional {post.image_url && ...} like @if in Blade.</p>
-            </div>
-          </div>
-
-          <!-- 5.4 Updated Index Page with Show Link -->
-          <div class="card">
-            <div class="card-header">5.4 Updated Index Page with Show Link</div>
-            <div class="card-body">
-              <p>Add show link in actions column.</p>
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">// ... existing code ...
-
-&lt;td className="px-6 py-4 whitespace-nowrap text-sm font-medium"&gt;
-  &lt;Button variant="outline" size="sm" asChild&gt;
-    &lt;Link href={route('post.show', post.id)}&gt;View&lt;/Link&gt;
-  &lt;/Button&gt;
-  &lt;Button variant="outline" size="sm" asChild&gt;
-    &lt;Link href={route('post.edit', post.id)}&gt;Edit&lt;/Link&gt;
-  &lt;/Button&gt;
-&lt;/td&gt;
-
-// ... rest unchanged</code></pre>
-              <p class="alert alert-success">Test—click view from list to see details.</p>
+              <p class="alert alert-primary">React explained: Props pass data (like Blade variables). Dialog from ShadCN for modal. Import into Index.tsx as shown in 2.1.</p>
+              <p class="alert alert-success">Test—click View in list, see modal with details.</p>
             </div>
           </div>
         </section>
@@ -1102,12 +1304,14 @@ export default function Show({ post }: ShowProps) {
             <div class="card-header">6.1 Controller for Destroy</div>
             <div class="card-body">
               <p>Update controller to add destroy.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
               <pre><code class="language-php">// ... existing methods ...
 
-public function destroy(Post $post) {
+public function destroy(Post $post)
+{
     try {
         $this-&gt;postService-&gt;deletePost($post);
+        Cache::flush(); // Invalidate cache on delete
         return redirect()-&gt;route('post.index')-&gt;with('success', 'Post deleted successfully.');
     } catch (\Exception $e) {
         return back()-&gt;with('error', $e-&gt;getMessage());
@@ -1122,12 +1326,13 @@ public function destroy(Post $post) {
             <div class="card-header">6.2 Service for Destroy</div>
             <div class="card-body">
               <p>Update service to add deletePost.</p>
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
+              <div class="file-path">app/Services/PostService.php</div>
               <pre><code class="language-php">// ... existing methods ...
 
-public function deletePost(Post $post) {
+public function deletePost(Post $post)
+{
     try {
-        $post-&gt;delete();
+        $post-&gt;delete(); // Soft delete
         return true;
     } catch (\Exception $e) {
         throw new \Exception('Failed to delete post: ' . $e-&gt;getMessage());
@@ -1141,29 +1346,7 @@ public function deletePost(Post $post) {
           <div class="card">
             <div class="card-header">6.3 Updated Index Page with Delete</div>
             <div class="card-body">
-              <p>Add to actions.</p>
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">// ... existing code ...
-
-&lt;td className="px-6 py-4 whitespace-nowrap text-sm font-medium"&gt;
-  &lt;Button variant="outline" size="sm" asChild&gt;
-    &lt;Link href={route('post.show', post.id)}&gt;View&lt;/Link&gt;
-  &lt;/Button&gt;
-  &lt;Button variant="outline" size="sm" asChild&gt;
-    &lt;Link href={route('post.edit', post.id)}&gt;Edit&lt;/Link&gt;
-  &lt;/Button&gt;
-  &lt;Button variant="destructive" size="sm" asChild&gt;
-    &lt;Link 
-      href={route('post.destroy', post.id)} 
-      method="delete" 
-      onClick={(e) =&gt; {
-        if (!confirm('Are you sure?')) e.preventDefault();
-      }}
-    &gt;Delete&lt;/Link&gt;
-  &lt;/Button&gt;
-&lt;/td&gt;
-
-// ... rest unchanged</code></pre>
+              <p>The delete button is already in Index.tsx (from 2.1). It uses method="delete" for CSRF-safe DELETE request.</p>
               <p class="alert alert-primary">method="delete" sends DELETE request. onClick for confirmation—like JS in Blade.</p>
               <p class="alert alert-success">Test delete—post disappears (soft deleted).</p>
             </div>
@@ -1175,18 +1358,22 @@ public function deletePost(Post $post) {
           <h2>7. Add Search</h2>
           <p>Server-side search on title/description. Add scope to model, update service and controller, then frontend input.</p>
 
+          <!-- 7.1 Model Scope for Search -->
           <div class="card">
             <div class="card-header">7.1 Model Scope for Search</div>
             <div class="card-body">
               <p>Create trait for reusable scope.</p>
               <div class="file-path">app/Models/Traits/Scopes/SearchScope.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Models\Traits\Scopes;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait SearchScope {
-    public function scopeSearch(Builder $query, ?string $search): Builder {
+trait SearchScope
+{
+    public function scopeSearch(Builder $query, ?string $search): Builder
+    {
         if (empty($search)) {
             return $query;
         }
@@ -1196,60 +1383,75 @@ trait SearchScope {
         });
     }
 }</code></pre>
-              <div class="file-path">app/Models/Post.php (Updated)</div>
-              <pre><code class="language-php">// Add use App\Models\Traits\Scopes\SearchScope;
+              <div class="file-path">app/Models/Post.php</div>
+              <pre><code class="language-php">// Add to top
+use App\Models\Traits\Scopes\SearchScope;
 
-// In class use ... , SearchScope;</code></pre>
-              <p class="alert alert-primary">Scopes are like query methods on models.</p>
+// In class
+use HasFactory, SoftDeletes, SearchScope;</code></pre>
+              <p class="alert alert-primary">Scopes are like query methods on models (e.g., Post::search('foo'))</p>
             </div>
           </div>
 
+          <!-- 7.2 Updated Service for Search -->
           <div class="card">
-            <div class="card-header">7.2 Updated Controller for Search</div>
+            <div class="card-header">7.2 Updated Service for Search</div>
             <div class="card-body">
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// Updated index
-public function index(Request $request) {
-    $result = $this-&gt;postService-&gt;getPostList($request);
-    return Inertia::render('Post/Index', [
-        'posts' =&gt; $result,
-        'filters' =&gt; $request-&gt;only(['search']), // Pass to React
-    ]);
-}</code></pre>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">7.3 Updated Service for Search</div>
-            <div class="card-body">
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
+              <div class="file-path">app/Services/PostService.php</div>
               <pre><code class="language-php">// Updated getPostList
-public function getPostList(Request $request) {
-    $filters = ['search' =&gt; $request-&gt;input('search')];
+public function getPostList(Request $request)
+{
+    $filters = [
+        'search' =&gt; $request-&gt;input('search'),
+        'sort_by' =&gt; $request-&gt;input('sort_by', 'id'),
+        'sort_direction' =&gt; $request-&gt;input('sort_direction', 'asc'),
+        'published' =&gt; $request-&gt;input('published'),
+        'per_page' =&gt; $request-&gt;input('per_page', 10),
+    ];
+
     $query = Post::query();
+
     if (!empty($filters['search'])) {
         $query = $query-&gt;search($filters['search']);
     }
-    return $query-&gt;get();
+
+    // Other filters added later
+
+    return $query-&gt;get(); // Will change to paginate in section 10
 }</code></pre>
             </div>
           </div>
 
+          <!-- 7.3 Updated Index Page with Search -->
           <div class="card">
-            <div class="card-header">7.4 Updated Index Page with Search</div>
+            <div class="card-header">7.3 Updated Index Page with Search</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">import { useState, useEffect } from 'react';
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Add imports
+import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { Input } from '@/components/ui/input';
 
-// Add filters to props
-
+// In component
 const [searchQuery, setSearchQuery] = useState(filters.search || '');
 
-// ... handleSearch with router.get
+// Debounced search (optional, add useEffect for real debounce)
+const handleSearch = () =&gt; {
+  router.get('/posts', { search: searchQuery, ...filters }, { preserveState: true, replace: true });
+};
 
-// Add input above table</code></pre>
-              <p class="alert alert-success">Test search—list filters.</p>
+// Above table in CardContent
+&lt;div className="mb-4 flex"&gt;
+  &lt;Input 
+    placeholder="Search posts..." 
+    value={searchQuery} 
+    onChange={(e) =&gt; setSearchQuery(e.target.value)}
+    onKeyDown={(e) =&gt; e.key === 'Enter' &amp;&amp; handleSearch()}
+    className="max-w-sm"
+  /&gt;
+  &lt;Button onClick={handleSearch} className="ml-2"&gt;Search&lt;/Button&gt;
+&lt;/div&gt;</code></pre>
+              <p class="alert alert-success">Test search—list filters on title/description.</p>
             </div>
           </div>
         </section>
@@ -1259,90 +1461,64 @@ const [searchQuery, setSearchQuery] = useState(filters.search || '');
           <h2>8. Add Sort</h2>
           <p>Sortable columns. Add scope, update service/controller, frontend click handlers.</p>
 
+          <!-- 8.1 Add Sort Scope Trait -->
           <div class="card">
             <div class="card-header">8.1 Add Sort Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/SortScope.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Models\Traits\Scopes;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait SortScope {
-    public function scopeSortBy(Builder $query, string $sortBy, string $sortDirection = 'asc'): Builder {
-        return $query->orderBy($sortBy, $sortDirection);
+trait SortScope
+{
+    public function scopeSortBy(Builder $query, string $sortBy, string $sortDirection = 'asc'): Builder
+    {
+        return $query-&gt;orderBy($sortBy, $sortDirection);
     }
 }</code></pre>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">8.2 Updated Model with Sort Scope</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Post.php (Updated)</div>
+              <div class="file-path">app/Models/Post.php</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\SortScope;
 
-// In use: ... , SearchScope, SortScope;</code></pre>
+// In use: HasFactory, SoftDeletes, SearchScope, SortScope;</code></pre>
             </div>
           </div>
 
+          <!-- 8.2 Updated Service with Sort -->
           <div class="card">
-            <div class="card-header">8.3 Updated Post Service with Sort</div>
+            <div class="card-header">8.2 Updated Service with Sort</div>
             <div class="card-body">
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
-              <pre><code class="language-php">// Updated getPostList
-public function getPostList(Request $request) {
-    $filters = [
-        'search' => $request->input('search'),
-        'sort_by' => $request->input('sort_by', 'id'),
-        'sort_direction' => $request->input('sort_direction', 'asc'),
-    ];
-    $query = Post::query();
-    if (!empty($filters['search'])) {
-        $query = $query->search($filters['search']);
-    }
-    $query = $query->sortBy($filters['sort_by'], $filters['sort_direction']);
-    return $query->get();
-}</code></pre>
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">// In getPostList, after search...
+$query = $query-&gt;sortBy($filters['sort_by'], $filters['sort_direction']);</code></pre>
             </div>
           </div>
 
+          <!-- 8.3 Updated Index with Sort -->
           <div class="card">
-            <div class="card-header">8.4 Updated Controller with Sort</div>
+            <div class="card-header">8.3 Updated Index with Sort</div>
             <div class="card-body">
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// Updated index
-public function index(Request $request) {
-    $result = $this->postService->getPostList($request);
-    return Inertia::render('Post/Index', [
-        'posts' => $result,
-        'filters' => $request->only(['search', 'sort_by', 'sort_direction']),
-    ]);
-}</code></pre>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">8.5 Updated Index Page with Sort</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">// Update props filters to include sort_by, sort_direction
-
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Add to component
 const handleSort = (column: string) =&gt; {
   const newDirection = filters.sort_by === column &amp;&amp; filters.sort_direction === 'asc' ? 'desc' : 'asc';
-  router.get(route('post.index'), {
+  router.get('/posts', {
     ...filters,
     sort_by: column,
     sort_direction: newDirection,
   }, { preserveState: true, replace: true });
 };
 
-// In table headers, e.g., for title
-&lt;th onClick={() =&gt; handleSort('title')} className="cursor-pointer"&gt;
-  Title {filters.sort_by === 'title' &amp;&amp; (filters.sort_direction === 'asc' ? '↑' : '↓')}
-&lt;/th&gt;
-
-// Add for id if wanted</code></pre>
+// In thead, for title th
+&lt;th 
+  scope="col" 
+  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+  onClick={() =&gt; handleSort('title')}
+&gt;
+  Title {filters.sort_by === 'title' &amp;&amp; (filters.sort_direction === 'asc' ? ' ↑' : ' ↓')}
+&lt;/th&gt;</code></pre>
               <p class="alert alert-primary">Click toggles asc/desc. Preserves other filters.</p>
               <p class="alert alert-success">Test sort—click title to sort.</p>
             </div>
@@ -1354,79 +1530,77 @@ const handleSort = (column: string) =&gt; {
           <h2>9. Add Filter</h2>
           <p>Filter by published. Similar flow.</p>
 
+          <!-- 9.1 Add Filter Scope Trait -->
           <div class="card">
             <div class="card-header">9.1 Add Filter Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/FilterScope.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Models\Traits\Scopes;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait FilterScope {
-    public function scopePublished(Builder $query, ?string $published): Builder {
+trait FilterScope
+{
+    public function scopePublished(Builder $query, ?string $published): Builder
+    {
         if ($published === null || $published === '') {
             return $query;
         }
-        return $query->where('is_published', $published === 'true');
+        return $query-&gt;where('is_published', $published === 'true');
     }
 }</code></pre>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">9.2 Updated Model with Filter Scope</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Post.php (Updated)</div>
+              <div class="file-path">app/Models/Post.php</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\FilterScope;
 
 // In use: ... , SortScope, FilterScope;</code></pre>
             </div>
           </div>
 
+          <!-- 9.2 Updated Service with Filter -->
           <div class="card">
-            <div class="card-header">9.3 Updated Post Service with Filter</div>
+            <div class="card-header">9.2 Updated Service with Filter</div>
             <div class="card-body">
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
-              <pre><code class="language-php">// Updated filters array add 'published' => $request->input('published')
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">// In getPostList filters add 'published' =&gt; $request-&gt;input('published')
 
-// In query
+// After sort
 if (!is_null($filters['published']) &amp;&amp; $filters['published'] !== '') {
-    $query = $query->published($filters['published']);
+    $query = $query-&gt;published($filters['published']);
 }</code></pre>
             </div>
           </div>
 
+          <!-- 9.3 Updated Index with Filter -->
           <div class="card">
-            <div class="card-header">9.4 Updated Controller with Filter</div>
+            <div class="card-header">9.3 Updated Index with Filter</div>
             <div class="card-body">
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// Updated filters in render: $request->only(['search', 'sort_by', 'sort_direction', 'published'])</code></pre>
-            </div>
-          </div>
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Add import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-          <div class="card">
-            <div class="card-header">9.5 Updated Index Page with Filter</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">// Update props filters to include published?: string
-
+// In component
 const [publishedFilter, setPublishedFilter] = useState(filters.published || '');
 
-useEffect(() =&gt; {
-  setPublishedFilter(filters.published || '');
-}, [filters]);
-
 const handleFilter = () =&gt; {
-  router.get(route('post.index'), { ...filters, published: publishedFilter }, { preserveState: true, replace: true });
+  router.get('/posts', { ...filters, published: publishedFilter }, { preserveState: true, replace: true });
 };
 
-// Add to UI, e.g., below search
-&lt;select value={publishedFilter} onChange={(e) =&gt; { setPublishedFilter(e.target.value); handleFilter(); }} className="ml-2"&gt;
-  &lt;option value=""&gt;All Statuses&lt;/option&gt;
-  &lt;option value="true"&gt;Published&lt;/option&gt;
-  &lt;option value="false"&gt;Draft&lt;/option&gt;
-&lt;/select&gt;</code></pre>
+// Below search div
+&lt;div className="mb-4 flex items-center"&gt;
+  &lt;Label className="mr-2"&gt;Status:&lt;/Label&gt;
+  &lt;Select value={publishedFilter} onValueChange={setPublishedFilter}&gt;
+    &lt;SelectTrigger className="w-[180px]"&gt;
+      &lt;SelectValue placeholder="All" /&gt;
+    &lt;/SelectTrigger&gt;
+    &lt;SelectContent&gt;
+      &lt;SelectItem value=""&gt;All&lt;/SelectItem&gt;
+      &lt;SelectItem value="true"&gt;Published&lt;/SelectItem&gt;
+      &lt;SelectItem value="false"&gt;Draft&lt;/SelectItem&gt;
+    &lt;/SelectContent&gt;
+  &lt;/Select&gt;
+  &lt;Button onClick={handleFilter} className="ml-2"&gt;Filter&lt;/Button&gt;
+&lt;/div&gt;</code></pre>
               <p class="alert alert-primary">Select triggers filter, preserves others.</p>
               <p class="alert alert-success">Test filter—list shows only selected status.</p>
             </div>
@@ -1438,74 +1612,76 @@ const handleFilter = () =&gt; {
           <h2>10. Add Pagination</h2>
           <p>Server-side pagination. Update to paginate, add frontend controls.</p>
 
+          <!-- 10.1 Add Pagination Scope Trait -->
           <div class="card">
             <div class="card-header">10.1 Add Pagination Scope Trait</div>
             <div class="card-body">
               <div class="file-path">app/Models/Traits/Scopes/PaginationScope.php</div>
               <pre><code class="language-php">&lt;?php
+
 namespace App\Models\Traits\Scopes;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-trait PaginationScope {
-    public function scopePaginateResults(Builder $query, int $perPage = 10, int $page = 1): LengthAwarePaginator {
-        return $query->paginate($perPage, ['*'], 'page', $page);
+trait PaginationScope
+{
+    public function scopePaginateResults(Builder $query, int $perPage = 10, int $page = 1): LengthAwarePaginator
+    {
+        return $query-&gt;paginate($perPage, ['*'], 'page', $page);
     }
 }</code></pre>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">10.2 Updated Model with Pagination Scope</div>
-            <div class="card-body">
-              <div class="file-path">app/Models/Post.php (Updated)</div>
+              <div class="file-path">app/Models/Post.php</div>
               <pre><code class="language-php">// Add use App\Models\Traits\Scopes\PaginationScope;
 
 // In use: ... , FilterScope, PaginationScope;</code></pre>
             </div>
           </div>
 
+          <!-- 10.2 Updated Service with Pagination -->
           <div class="card">
-            <div class="card-header">10.3 Updated Post Service with Pagination</div>
+            <div class="card-header">10.2 Updated Service with Pagination</div>
             <div class="card-body">
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
-              <pre><code class="language-php">// Add to filters 'per_page' => $request->input('per_page', 10)
-
-// Replace get() with
-return $query->paginateResults($filters['per_page'], $request->input('page', 1));</code></pre>
-              <p class="alert alert-primary">Paginator object has data, current_page, etc.</p>
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">// In getPostList, replace get() with
+return $query-&gt;paginateResults($filters['per_page'], $request-&gt;input('page', 1));</code></pre>
+              <p class="alert alert-primary">Paginator object has data, current_page, etc. Use $result->data in Index.</p>
             </div>
           </div>
 
+          <!-- 10.3 Updated Index with Pagination -->
           <div class="card">
-            <div class="card-header">10.4 Updated Controller with Pagination</div>
+            <div class="card-header">10.3 Updated Index with Pagination</div>
             <div class="card-body">
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">// Updated filters only add 'per_page'</code></pre>
-            </div>
-          </div>
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">// Update props: posts: { data: Post[], current_page: number, last_page: number, ... }
 
-          <div class="card">
-            <div class="card-header">10.5 Updated Index Page with Pagination</div>
-            <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">// Update props posts to be paginator: { data: Post[], current_page: number, last_page: number, ... }
+// In map: {posts.data.map((post) =&gt; ... }
 
+// Below table
 const handlePageChange = (page: number) =&gt; {
-  router.get(route('post.index'), { ...filters, page }, { preserveState: true, replace: true });
+  router.get('/posts', { ...filters, page }, { preserveState: true, replace: true });
 };
 
-// Use posts.data in map
-
-// Add below table
-&lt;div className="flex justify-between mt-4"&gt;
-  &lt;Button disabled={posts.current_page === 1} onClick={() =&gt; handlePageChange(posts.current_page - 1)}&gt;Previous&lt;/Button&gt;
+&lt;div className="flex justify-between items-center mt-4"&gt;
+  &lt;Button 
+    variant="outline" 
+    disabled={posts.current_page === 1} 
+    onClick={() =&gt; handlePageChange(posts.current_page - 1)}
+  &gt;
+    Previous
+  &lt;/Button&gt;
   &lt;span&gt;Page {posts.current_page} of {posts.last_page}&lt;/span&gt;
-  &lt;Button disabled={posts.current_page === posts.last_page} onClick={() =&gt; handlePageChange(posts.current_page + 1)}&gt;Next&lt;/Button&gt;
+  &lt;Button 
+    variant="outline" 
+    disabled={posts.current_page === posts.last_page} 
+    onClick={() =&gt; handlePageChange(posts.current_page + 1)}
+  &gt;
+    Next
+  &lt;/Button&gt;
 &lt;/div&gt;</code></pre>
               <p class="alert alert-primary">posts.data for list. Buttons update page param.</p>
-              <p class="alert alert-success">Test pagination—navigate pages.</p>
+              <p class="alert alert-success">Test pagination—navigate pages with 10/post.</p>
             </div>
           </div>
         </section>
@@ -1518,17 +1694,16 @@ const handlePageChange = (page: number) =&gt; {
           <div class="card">
             <div class="card-header">11.1 Updated Index Page with Reset</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
               <pre><code class="language-tsx">const resetFilters = () =&gt; {
   setSearchQuery('');
   setPublishedFilter('');
-  // Reset other states
-  router.get(route('post.index'), {}, { preserveState: false, replace: true });
+  router.visit('/posts', { preserveState: false });
 };
 
-// Add button near search/filter
+// Add near search/filter buttons
 &lt;Button variant="secondary" onClick={resetFilters} className="ml-2"&gt;Reset&lt;/Button&gt;</code></pre>
-              <p class="alert alert-primary">Clears params and state.</p>
+              <p class="alert alert-primary">Clears params and state, reloads fresh.</p>
               <p class="alert alert-success">Test—apply filters, reset to all.</p>
             </div>
           </div>
@@ -1537,30 +1712,33 @@ const handlePageChange = (page: number) =&gt; {
         <!-- 12. TABLE EXPORT -->
         <section id="export" class="section-header">
           <h2>12. Table Export</h2>
-          <p>Export to Excel.</p>
+          <p>Export to CSV (better for React 19). Install: <code>npm i react-csv</code></p>
 
           <div class="card">
             <div class="card-header">12.1 Updated Index Page with Export</div>
             <div class="card-body">
-              <p>Install: <code>npm install react-export-table-to-excel</code></p>
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
-              <pre><code class="language-tsx">import { useRef } from 'react';
-import { useDownloadExcel } from 'react-export-table-to-excel';
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
+              <pre><code class="language-tsx">import { CSVLink } from 'react-csv';
 
-const tableRef = useRef&lt;HTMLTableElement&gt;(null);
+const headers = [
+  { label: 'ID', key: 'id' },
+  { label: 'Title', key: 'title' },
+  { label: 'Status', key: 'is_published' },
+  // Add more
+];
 
-const { onDownload } = useDownloadExcel({
-  currentTableRef: tableRef.current,
-  filename: 'posts',
-  sheet: 'Posts'
-});
+const csvData = posts.data.map(post =&gt; ({
+  id: post.id,
+  title: post.title,
+  is_published: post.is_published ? 'Published' : 'Draft',
+}));
 
-// Add button above table
-&lt;Button variant="outline" onClick={onDownload}&gt;Export to Excel&lt;/Button&gt;
-
-// Table: &lt;table ref={tableRef}&gt; ...</code></pre>
-              <p class="alert alert-primary">useRef references DOM for export.</p>
-              <p class="alert alert-success">Test—downloads Excel with data.</p>
+// Above table
+&lt;CSVLink data={csvData} headers={headers} filename="posts.csv" className="mr-2"&gt;
+  &lt;Button variant="outline"&gt;Export CSV&lt;/Button&gt;
+&lt;/CSVLink&gt;</code></pre>
+              <p class="alert alert-primary">CSVLink triggers download with mapped data.</p>
+              <p class="alert alert-success">Test—downloads CSV with current page data.</p>
             </div>
           </div>
         </section>
@@ -1573,20 +1751,21 @@ const { onDownload } = useDownloadExcel({
           <div class="card">
             <div class="card-header">13.1 Hooks and Router Examples</div>
             <div class="card-body">
-              <p>In Index.tsx (add for demo):</p>
-              <pre><code class="language-tsx">// useState: Local variable that re-renders on change
+              <p>In any component (e.g., Index.tsx):</p>
+              <pre><code class="language-tsx">// useState: Local state, re-renders on change (like Livewire $data)
 const [count, setCount] = useState(0);
 &lt;Button onClick={() =&gt; setCount(count + 1)}&gt;Count: {count}&lt;/Button&gt;
 
-// useEffect: Run code on change/mount
+// useEffect: Side effects on mount/update (like mounted() or computed in Livewire)
 useEffect(() =&gt; {
-  console.log('Posts changed');
-}, [posts]);
+  console.log('Posts loaded');
+}, [posts]); // Runs when posts changes
 
-// router: Navigate with data
-router.reload(); // Refresh data</code></pre>
-              <p class="alert alert-primary">Like computed/watch in Vue, but for React.</p>
-              <p class="alert alert-success">Test—see console on changes.</p>
+// router: Inertia navigation (like redirect() but SPA)
+import { router } from '@inertiajs/react';
+router.reload({ only: ['posts'] }); // Refresh just posts prop</code></pre>
+              <p class="alert alert-primary">Hooks are functions for state/effects. Router for visits without full reload.</p>
+              <p class="alert alert-success">Test—add to Index, see console/logic work.</p>
             </div>
           </div>
         </section>
@@ -1594,36 +1773,51 @@ router.reload(); // Refresh data</code></pre>
         <!-- 14. ADD/REMOVE ROW -->
         <section id="rows" class="section-header">
           <h2>14. Add/Remove Row</h2>
-          <p>Dynamic fields, e.g., in Create for multiple tags.</p>
+          <p>Dynamic fields, e.g., tags in Create.</p>
 
           <div class="card">
             <div class="card-header">14.1 Updated Create Page with Dynamic Rows</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
-              <pre><code class="language-tsx">// Add state
-const [tags, setTags] = useState([{ id: 1, value: '' }]);
+              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+              <pre><code class="language-tsx">// Add to useForm data: tags: [] as string[],
+
+// Add state
+const [tags, setTags] = useState([{ id: Date.now(), value: '' }]);
 
 const addTag = () =&gt; setTags([...tags, { id: Date.now(), value: '' }]);
 
-const removeTag = (id) =&gt; setTags(tags.filter(tag =&gt; tag.id !== id));
+const removeTag = (id: number) =&gt; setTags(tags.filter(tag =&gt; tag.id !== id));
 
-const updateTag = (id, value) =&gt; setTags(tags.map(tag =&gt; tag.id === id ? { ...tag, value } : tag));
+const updateTag = (id: number, value: string) =&gt; 
+  setTags(tags.map(tag =&gt; tag.id === id ? { ...tag, value } : tag));
 
-// In form, add section
+// In form, before submit, setData('tags', tags.map(t =&gt; t.value).filter(Boolean));
+
+// Section in space-y-4
 &lt;div&gt;
   &lt;Label&gt;Tags&lt;/Label&gt;
   {tags.map(tag =&gt; (
-    &lt;div key={tag.id} className="flex mb-2"&gt;
-      &lt;Input value={tag.value} onChange={(e) =&gt; updateTag(tag.id, e.target.value)} /&gt;
-      &lt;Button type="button" onClick={() =&gt; removeTag(tag.id)} variant="destructive" className="ml-2"&gt;Remove&lt;/Button&gt;
+    &lt;div key={tag.id} className="flex items-center mb-2"&gt;
+      &lt;Input 
+        value={tag.value} 
+        onChange={(e) =&gt; updateTag(tag.id, e.target.value)} 
+        placeholder="Tag name"
+        className="flex-1 mr-2"
+      /&gt;
+      &lt;Button 
+        type="button" 
+        variant="destructive" 
+        size="sm" 
+        onClick={() =&gt; removeTag(tag.id)}
+      &gt;
+        Remove
+      &lt;/Button&gt;
     &lt;/div&gt;
   ))}
-  &lt;Button type="button" onClick={addTag}&gt;Add Tag&lt;/Button&gt;
-&lt;/div&gt;
-
-// On submit, add data.tags = tags.map(t =&gt; t.value);</code></pre>
-              <p class="alert alert-primary">Array state for rows. ... spreads for immutable updates.</p>
-              <p class="alert alert-success">Test—add/remove inputs.</p>
+  &lt;Button type="button" variant="outline" onClick={addTag}&gt;Add Tag&lt;/Button&gt;
+&lt;/div&gt;</code></pre>
+              <p class="alert alert-primary">Array state for rows. Immutable updates with map/filter/spread.</p>
+              <p class="alert alert-success">Test—add/remove tags in create form.</p>
             </div>
           </div>
         </section>
@@ -1631,23 +1825,39 @@ const updateTag = (id, value) =&gt; setTags(tags.map(tag =&gt; tag.id === id ? {
         <!-- 15. PRICE CALCULATION -->
         <section id="price" class="section-header">
           <h2>15. Price Calculation</h2>
-          <p>Example for dynamic calc, e.g., if posts had price.</p>
+          <p>Example for dynamic calc (add price field to model if needed).</p>
 
           <div class="card">
             <div class="card-header">15.1 Updated Create Page with Calculation</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
-              <pre><code class="language-tsx">// Assume price, tax fields
-const [price, setPrice] = useState(0);
-const [tax, setTax] = useState(0.1);
+              <div class="file-path">resources/js/pages/Post/Create.tsx</div>
+              <pre><code class="language-tsx">// Add to data: price: 0, tax: 0.1,
 
-const total = useMemo(() =&gt; price + (price * tax), [price, tax]);
+import { useMemo } from 'react';
+
+const total = useMemo(() =&gt; data.price + (data.price * (data.tax || 0.1)), [data.price, data.tax]);
 
 // In form
-&lt;Input type="number" value={price} onChange={(e) =&gt; setPrice(Number(e.target.value))} /&gt;
-&lt;p&gt;Total: {total.toFixed(2)}&lt;/p&gt;</code></pre>
-              <p class="alert alert-primary">useMemo caches calc, re-runs on deps.</p>
-              <p class="alert alert-success">Test—updates total live.</p>
+&lt;div className="space-y-2"&gt;
+  &lt;Label&gt;Price&lt;/Label&gt;
+  &lt;Input 
+    type="number" 
+    value={data.price} 
+    onChange={(e) =&gt; setData('price', Number(e.target.value) || 0)} 
+  /&gt;
+&lt;/div&gt;
+&lt;div className="space-y-2"&gt;
+  &lt;Label&gt;Tax Rate&lt;/Label&gt;
+  &lt;Input 
+    type="number" 
+    step="0.01" 
+    value={data.tax} 
+    onChange={(e) =&gt; setData('tax', Number(e.target.value) || 0.1)} 
+  /&gt;
+&lt;/div&gt;
+&lt;p className="text-lg font-bold"&gt;Total: ${total.toFixed(2)}&lt;/p&gt;</code></pre>
+              <p class="alert alert-primary">useMemo caches calc, re-runs only on deps (optimizes like Laravel computed).</p>
+              <p class="alert alert-success">Test—change price/tax, total updates live.</p>
             </div>
           </div>
         </section>
@@ -1655,20 +1865,24 @@ const total = useMemo(() =&gt; price + (price * tax), [price, tax]);
         <!-- 16. TOGGLER -->
         <section id="toggler" class="section-header">
           <h2>16. Toggler</h2>
-          <p>Toggle sections.</p>
+          <p>Toggle sections, e.g., advanced filters.</p>
 
           <div class="card">
             <div class="card-header">16.1 Updated Index Page with Toggler</div>
             <div class="card-body">
-              <div class="file-path">resources/js/pages/Post/Index.tsx (Updated)</div>
+              <div class="file-path">resources/js/pages/Post/Index.tsx</div>
               <pre><code class="language-tsx">const [showAdvanced, setShowAdvanced] = useState(false);
 
-&lt;Button onClick={() =&gt; setShowAdvanced(!showAdvanced)}&gt;Toggle Advanced&lt;/Button&gt;
+&lt;Button onClick={() =&gt; setShowAdvanced(!showAdvanced)} className="mb-4"&gt;
+  {showAdvanced ? 'Hide' : 'Show'} Advanced
+&lt;/Button&gt;
 {showAdvanced &amp;&amp; (
-  &lt;div&gt;Advanced options here&lt;/div&gt;
+  &lt;div className="p-4 bg-gray-50 rounded"&gt;
+    Advanced options here (e.g., more filters)
+  &lt;/div&gt;
 )}</code></pre>
-              <p class="alert alert-primary">Boolean state for show/hide.</p>
-              <p class="alert alert-success">Test—toggles content.</p>
+              <p class="alert alert-primary">Boolean state for show/hide (like Alpine.js x-show).</p>
+              <p class="alert alert-success">Test—toggles content visibility.</p>
             </div>
           </div>
         </section>
@@ -1678,77 +1892,63 @@ const total = useMemo(() =&gt; price + (price * tax), [price, tax]);
           <h2>17. Advanced Features</h2>
 
           <div class="card">
-            <div class="card-header">17.1 File Upload Preview</div>
+            <div class="card-header">17.1 Restore/Force Delete</div>
             <div class="card-body">
-              <p>Update Create/Edit for preview.</p>
-              <div class="file-path">resources/js/pages/Post/Create.tsx (Updated)</div>
-              <pre><code class="language-tsx">const [preview, setPreview] = useState(null);
+              <p>Add routes for trashed posts.</p>
+              <div class="file-path">routes/web.php</div>
+              <pre><code class="language-php">Route::resource('posts', PostController::class)-&gt;withTrashed();
 
-const handleImageChange = (e) =&gt; {
-  const file = e.target.files[0];
-  setData('image', file);
-  if (file) {
-    setPreview(URL.createObjectURL(file));
-  }
-};
+// Or specific
+Route::post('/posts/{post}/restore', [PostController::class, 'restore'])-&gt;name('post.restore');
+Route::delete('/posts/{post}/force-delete', [PostController::class, 'forceDelete'])-&gt;name('post.force-delete');</code></pre>
 
-// Below input
-{preview &amp;&amp; &lt;img src={preview} alt="Preview" className="mt-2 max-w-xs" /&gt;}</code></pre>
-              <p class="alert alert-success">Test—upload shows preview.</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">17.2 Restore/Force Delete</div>
-            <div class="card-body">
-              <p>Add routes:</p>
-              <div class="file-path">routes/web.php (Updated)</div>
-              <pre><code class="language-php">Route::post('/posts/{post}/restore', [PostController::class, 'restore'])->name('post.restore');
-Route::delete('/posts/{post}/force-delete', [PostController::class, 'forceDelete'])->name('post.force-delete');</code></pre>
-
-              <p>Update controller with methods.</p>
-              <div class="file-path">app/Http/Controllers/PostController.php (Updated)</div>
-              <pre><code class="language-php">public function restore($id) {
-  try {
-    $post = Post::withTrashed()->findOrFail($id);
-    $post->restore();
-    return redirect()->route('post.index')->with('success', 'Post restored.');
-  } catch (\Exception $e) {
-    return back()->with('error', $e->getMessage());
-  }
+              <p>Update controller.</p>
+              <div class="file-path">app/Http/Controllers/PostController.php</div>
+              <pre><code class="language-php">public function restore(Post $post)
+{
+    try {
+        $post-&gt;restore();
+        Cache::flush();
+        return redirect()-&gt;route('post.index')-&gt;with('success', 'Post restored.');
+    } catch (\Exception $e) {
+        return back()-&gt;with('error', $e-&gt;getMessage());
+    }
 }
 
-public function forceDelete($id) {
-  try {
-    $post = Post::withTrashed()->findOrFail($id);
-    if ($post->image) Storage::disk('public')->delete($post->image);
-    $post->forceDelete();
-    return redirect()->route('post.index')->with('success', 'Post permanently deleted.');
-  } catch (\Exception $e) {
-    return back()->with('error', $e->getMessage());
-  }
-}</code></pre>
+public function forceDelete(Post $post)
+{
+    try {
+        if ($post-&gt;image) Storage::disk('public')-&gt;delete($post-&gt;image);
+        $post-&gt;forceDelete();
+        Cache::flush();
+        return redirect()-&gt;route('post.index')-&gt;with('success', 'Post permanently deleted.');
+    } catch (\Exception $e) {
+        return back()-&gt;with('error', $e-&gt;getMessage());
+    }
+}
 
-              <p>Update index to show deleted, add buttons (e.g., filter for trashed).</p>
-              <p class="alert alert-success">Test—delete, restore.</p>
+// In index, to include trashed: $result = $this-&gt;postService-&gt;getPostList($request)-&gt;withTrashed();</code></pre>
+
+              <p class="alert alert-success">Test—delete, then add filter for trashed, restore/force delete.</p>
             </div>
           </div>
 
           <div class="card">
-            <div class="card-header">17.3 Caching</div>
+            <div class="card-header">17.2 Caching</div>
             <div class="card-body">
-              <p>Update service getPostList with cache.</p>
-              <div class="file-path">app/Services/PostService.php (Updated)</div>
-              <pre><code class="language-php">use Illuminate\Support\Facades\Cache;
+              <p>Update service getPostList with cache. Add <code>use Illuminate\Support\Facades\Cache;</code></p>
+              <div class="file-path">app/Services/PostService.php</div>
+              <pre><code class="language-php">public function getPostList(Request $request)
+{
+    // ... build $query and $filters
 
-// In getPostList
-$cacheKey = 'posts_' . md5(serialize($filters));
-$results = Cache::remember($cacheKey, 300, function() use ($query, $filters) {
-  return $query->paginateResults($filters['per_page'], $request->input('page', 1));
-});</code></pre>
-
-              <p>Clear on CRUD: Add Cache::flush() in controller store/update/destroy/restore/forceDelete.</p>
-              <p class="alert alert-success">Test—faster loads after first.</p>
+    $cacheKey = 'posts_' . md5(serialize($filters) . $request-&gt;input('page', 1));
+    return Cache::remember($cacheKey, 300, function () use ($query, $filters, $request) {
+        return $query-&gt;paginateResults($filters['per_page'], $request-&gt;input('page', 1));
+    });
+}</code></pre>
+              <p>Cache invalidates on CRUD via flush() in controller.</p>
+              <p class="alert alert-success">Test—faster loads after first request.</p>
             </div>
           </div>
         </section>
@@ -1761,28 +1961,36 @@ $results = Cache::remember($cacheKey, 300, function() use ($query, $filters) {
           <div class="card">
             <div class="card-header">18.1 App Layout</div>
             <div class="card-body">
-              <div class="file-path">resources/js/layouts/app-layout.tsx</div>
+              <div class="file-path">resources/js/layouts/AppLayout.tsx</div>
               <pre><code class="language-tsx">import { ReactNode } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
 interface Props {
   children: ReactNode;
   title?: string;
+  header?: ReactNode;
 }
 
-export default function AppLayout({ children, title }: Props) {
+export default function AppLayout({ children, title, header }: Props) {
   return (
     &lt;div className="min-h-screen bg-gray-100"&gt;
       &lt;Head title={title} /&gt;
-      &lt;nav className="bg-white border-b p-4"&gt;
-        &lt;Link href={route('post.index')} className="text-primary"&gt;Posts&lt;/Link&gt;
+      &lt;nav className="bg-white border-b shadow-sm"&gt;
+        &lt;div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"&gt;
+          &lt;div className="flex justify-between h-16"&gt;
+            &lt;div className="flex items-center"&gt;
+              &lt;Link href="/posts" className="text-xl font-bold text-gray-900"&gt;Post App&lt;/Link&gt;
+            &lt;/div&gt;
+            {header}
+          &lt;/div&gt;
+        &lt;/div&gt;
       &lt;/nav&gt;
-      &lt;main className="max-w-7xl mx-auto p-6"&gt;{children}&lt;/main&gt;
+      &lt;main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"&gt;{children}&lt;/main&gt;
     &lt;/div&gt;
   );
 }</code></pre>
-              <p class="alert alert-primary">children is slotted content.</p>
-              <p class="alert alert-success">All pages use this—consistent nav.</p>
+              <p class="alert alert-primary">children slots content. Header for dynamic nav (like @yield in Blade).</p>
+              <p class="alert alert-success">All pages use this—consistent layout.</p>
             </div>
           </div>
         </section>
